@@ -1,0 +1,107 @@
+- data explanation + starter notebook:
+    https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/468010
+
+- other starter notebooks:
+    https://www.kaggle.com/code/ttahara/hms-hbac-resnet34d-baseline-training
+    https://www.kaggle.com/code/ttahara/hms-hbac-resnet34d-baseline-inference
+    https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/url
+
+- terminology:
+    https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467000
+ions/hms-harmful-brain-activity-classification/discussion/468010
+
+- de-noising:
+    https://www.kaggle.com/code/yusaku5739/eeg-signal-denosing-using-wavelet-transform
+
+- spectrogram datasets: 
+    kaggle datasets download -f eeg_specs.npy cdeotte/brain-eeg-spectrograms
+    kaggle datasets download cdeotte/brain-spectrograms
+
+- useful packages:
+    https://mne.tools/stable/index.html
+    https://nilearn.github.io/stable/index.html
+
+- relevant books/courses/documentation
+    https://www.amazon.de/-/en/Mike-X-Cohen/dp/0262019876
+    https://www.fieldtriptoolbox.org/tutorial/timefrequencyanalysis/
+    https://www.udemy.com/share/102cNY3@Y02piw4s_YEHZWw7CPboE3C6KmJ-KxVZspI5L0Iqcdo3gjPcU43JinR__mdOZ48rwQ==/
+
+- explanation videos:
+    https://www.youtube.com/watch?v=7ahrcB5HL0k
+    https://www.youtube.com/watch?v=fYtVHhk3xJ0
+
+- data visualization:
+    https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467021
+
+- data expansion:
+    https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469953
+    https://github.com/bdsp-core/IIIC-SPaRCNet#License-1-ov-file
+
+- models for different competitions:
+    https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467979
+    https://www.kaggle.com/code/rohitsingh9990/trends-eda-visualization-simple-baseline
+    https://www.kaggle.com/code/aerdem4/rapids-svm-on-trends-neuroimaging
+    https://www.kaggle.com/code/gunesevitan/trends-neuroimaging-data-analysis-3d-features
+    https://www.kaggle.com/code/tunguz/rapids-ensemble-for-trends-neuroimaging
+    https://www.kaggle.com/code/soham1024/visualization-using-nilearn
+
+- relevant papers:
+    https://bdsp.io/content/bdsp-sparcnet/1.1/
+    https://pubmed.ncbi.nlm.nih.gov/38161793/
+    https://pubmed.ncbi.nlm.nih.gov/38055360/
+    https://pubmed.ncbi.nlm.nih.gov/38230571/
+    https://pubmed.ncbi.nlm.nih.gov/38224524/
+    https://pubmed.ncbi.nlm.nih.gov/38202939/
+    https://pubmed.ncbi.nlm.nih.gov/38191643/
+    https://pubmed.ncbi.nlm.nih.gov/38032784/
+    https://pubmed.ncbi.nlm.nih.gov/38219404/
+    https://doi.org/10.1016/S1665-6423(13)71524-4
+    https://www.nzbri.org/resources/publications/657/Shoorangiz__2021.pdf
+    https://www.sciencedirect.com/science/article/pii/S2665917423002416
+    https://www.sciencedirect.com/science/article/pii/S2405844023108188
+    https://www.sciencedirect.com/science/article/abs/pii/S0166432820303648
+    https://www.sciencedirect.com/science/article/abs/pii/S0045790622004372
+    https://www.sciencedirect.com/science/article/pii/S2666827020300037
+    https://www.sciencedirect.com/science/article/pii/S2405844023055500
+    https://www.sciencedirect.com/science/article/pii/S2666354624000012
+    https://paperswithcode.com/paper/interpretable-sincnet-based-deep-learning-for
+    https://paperswithcode.com/paper/synthetic-epileptic-brain-activities-using
+    https://paperswithcode.com/paper/reconstructing-perceptive-images-from-brain-1
+    https://paperswithcode.com/paper/fractal-and-multifractal-properties-of
+
+- kernels:
+    https://www.kaggle.com/code/saife245/neuroimaging-in-depth-understanding-eda-model
+    https://www.kaggle.com/code/ruslankl/eeg-data-analysis
+    https://www.kaggle.com/code/rohitsingh9990/trends-eda-visualization-simple-baseline
+    https://www.kaggle.com/code/harunshimanto/machine-learning-algorithms-for-epileptic-seizures
+    https://www.kaggle.com/code/charel/learn-by-example-active-inference-in-the-brain-3
+
+
+- 2640 EEG ids
+- Waveforms -> spectrograms:
+
+LL Spec = ( spec(Fp1 - F7) + spec(F7 - T3) + spec(T3 - T5) + spec(T5 - O1) )/4
+LP Spec = ( spec(Fp1 - F3) + spec(F3 - C3) + spec(C3 - P3) + spec(P3 - O1) )/4
+RP Spec = ( spec(Fp2 - F4) + spec(F4 - C4) + spec(C4 - P4) + spec(P4 - O2) )/4
+RL Spec = ( spec(Fp2 - F8) + spec(F8 - T4) + spec(T4 - T6) + spec(T6 - O2) )/4
+
+- Ensemble models might be helpful
+- the MCN system renames four electrodes of the 10–20 system:
+	T3 is now T7
+	T4 is now T8
+	T5 is now P7
+	T6 is now P8
+	EKG - heart 
+- There are no overlap of EEG IDs in test set.
+- There are no overlap of spectrogram IDs in test set.
+- There are overlap of patient IDs in test set.
+- EEG IDs in test csv are the same as those in test_eeg dir.
+- Spectrogram IDs in test csv are the same as those in test_spectrogram dir.
+- 5 < mean number of spectrogram/eeg per patient < 6 (8.76 spectrogram/patient and 5.71 eeg/patient in train set)
+- EEG IDs of train and test set do not overlap.
+- Spectrogram IDs of train and test set do not overlap.
+- Patient IDs of train and test set do not overlap.
+- Shapes of EEGs are all [20,10000].
+- Shapes of spectrograms are all [300, 401].
+- 2.5% < mean ratio of nan data in test spectrogram < 3% (1.82% in train set)
+- There are no NaNs in EEG data (0.005% in train set).

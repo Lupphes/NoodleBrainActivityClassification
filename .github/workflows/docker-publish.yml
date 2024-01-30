@@ -1,0 +1,28 @@
+name: Docker
+
+on:
+  schedule:
+    - cron: "25 20 * * *"
+  push:
+    branches: ["master"]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: ["master"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check PEP 8 compliance in brain
+        working-directory: brain
+        run: |
+          pip install black
+          black --check --config pyproject.toml .
