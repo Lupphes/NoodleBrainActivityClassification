@@ -24,6 +24,16 @@ noodle_nappers/
 |   |-- ...
 ```
 
+## Version
+
+We are using _Python 3.10_ and the requirement installed as specified always with `pip`:
+
+```bash
+python3.10 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## Commit and PR Rules
 
 1. **"Protected" master branch**: Direct commits to the master branch are not recommended. The branch is not locked, but do not do it.
