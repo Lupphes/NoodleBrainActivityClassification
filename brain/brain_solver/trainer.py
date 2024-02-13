@@ -1,55 +1,58 @@
-import torch.optim as optim
-import torch.nn as nn
 import torch
+import torch.nn as nn
+import pytorch_lightning as pl
+from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
 
-class Trainer:
-    def __init__(self, model, data_loaders, num_classes, lr=0.01):
-        self.model = model
-        self.data_loaders = data_loaders
-        self.lr = lr
-        self.num_classes = num_classes
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+class Trainer(pl.LightningModule):
 
-        # Modify the model's final layer to match the number of classes
-        num_ftrs = model.fc.in_features
-        self.model.fc = nn.Linear(num_ftrs, num_classes)
-        self.model.to(self.device)
+    def __init__(
+        self, weight_file, use_kaggle_spectrograms=False, use_eeg_spectrograms=True
+    ):
+        super().__init__()
+        self.use_kaggle_spectrograms = use_kaggle_spectrograms
+        self.use_eeg_spectrograms = use_eeg_spectrograms
+        self.base_model = efficientnet_b0()
+        self.base_model.load_state_dict(torch.load(weight_file))
+        # Update the classifier layer to match the number of target classes
+        self.base_model.classifier[1] = nn.Linear(
+            self.base_model.classifier[1].in_features, 6
+        )
+        self.prob_out = nn.Softmax(dim=1)
 
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
-        self.criterion = nn.CrossEntropyLoss()
+    def forward(self, x):
+        # Split the input into two groups
+        x1 = [x[:, :, :, i : i + 1] for i in range(4)]
+        x1 = torch.concat(x1, dim=1)
+        x2 = [x[:, :, :, i + 4 : i + 5] for i in range(4)]
+        x2 = torch.concat(x2, dim=1)
 
-    def train(self, epochs=10):
-        for epoch in range(epochs):
-            for phase in ["train", "val"]:
-                if phase == "train":
-                    self.model.train()
-                else:
-                    self.model.eval()
+        # Select the appropriate input based on initialization parameters
+        if self.use_kaggle_spectrograms and self.use_eeg_spectrograms:
+            x = torch.concat([x1, x2], dim=2)
+        elif self.use_eeg_spectrograms:
+            x = x2
+        else:
+            x = x1
 
-                running_loss = 0.0
-                running_corrects = 0
+        # Expand the input to have 3 channels
+        x = torch.concat([x, x, x], dim=3)
+        x = x.permute(0, 3, 1, 2)
 
-                for inputs, labels in self.data_loaders[phase]:
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
+        out = self.base_model(x)
+        return out
 
-                    self.optimizer.zero_grad()
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        out = self.forward(x)
+        out = torch.log_softmax(out, dim=1)
+        kl_loss = nn.KLDivLoss(reduction="batchmean")
+        loss = kl_loss(out, y)
+        return loss
 
-                    with torch.set_grad_enabled(phase == "train"):
-                        outputs = self.model(inputs)
-                        loss = self.criterion(outputs, labels)
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        return torch.softmax(self.forward(batch), dim=1)
 
-                        if phase == "train":
-                            loss.backward()
-                            self.optimizer.step()
-
-                    _, preds = torch.max(outputs, 1)
-                    running_loss += loss.item() * inputs.size(0)
-                    running_corrects += torch.sum(preds == labels.data)
-
-                epoch_loss = running_loss / len(self.data_loaders[phase].dataset)
-                epoch_acc = float(running_corrects) / len(
-                    self.data_loaders[phase].dataset
-                )
-                print(f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+    def configure_optimizers(self, lr=1e-3):
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        return optimizer

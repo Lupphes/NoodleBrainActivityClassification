@@ -1,10 +1,31 @@
 import os
-import pandas as pd
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import torch
+import pywt
+import librosa
+from tqdm import tqdm
+
+from sklearn.model_selection import GroupKFold
+from torch.utils.data import DataLoader
+import torch
+import pytorch_lightning as pl
+import gc
+
+from .eeg_dataset import EEGDataset
+from .trainer import Trainer
 
 
 class Helpers:
+    NAMES = ["LL", "LP", "RP", "RR"]
+    FEATS = [
+        ["Fp1", "F7", "T3", "T5", "O1"],
+        ["Fp1", "F3", "C3", "P3", "O1"],
+        ["Fp2", "F8", "T4", "T6", "O2"],
+        ["Fp2", "F4", "C4", "P4", "O2"],
+    ]
+
     @staticmethod
     def check_file_existence(file_path):
         """
@@ -129,3 +150,296 @@ class Helpers:
             plt.show()
 
         return data
+
+    @staticmethod
+    def read_spectrograms(
+        path, data_path_train_on_brain_spectograms_dataset_specs, read_files=False
+    ):
+        """
+        Reads spectrogram data from a given path. Either reads individual parquet files
+        or loads a pre-processed numpy file based on the flag provided.
+
+        Parameters:
+        - path: str, path to the directory containing spectrogram files or to the numpy file.
+        - read_files: bool, if True reads parquet files, if False loads a numpy file.
+
+        Returns:
+        - A dictionary with keys as the spectrogram names (integers) and values as numpy arrays of the spectrogram data.
+        """
+        if read_files:
+            files = os.listdir(path)
+            print(f"There are {len(files)} spectrogram parquets")
+            spectrograms = {}
+            for i, f in enumerate(files):
+                if i % 100 == 0:
+                    print(i, ", ", end="")
+                tmp = pd.read_parquet(os.path.join(path, f))
+                name = int(f.split(".")[0])
+                spectrograms[name] = tmp.iloc[:, 1:].values
+        else:
+            # Assuming the numpy file is stored one level up from the given path
+            npy_path = os.path.join(
+                os.path.dirname(path),
+                data_path_train_on_brain_spectograms_dataset_specs,
+            )
+            spectrograms = np.load(npy_path, allow_pickle=True).item()
+
+        return spectrograms
+
+    @staticmethod
+    def read_eeg_spectrograms(
+        train_df, eeg_spectrogram_path, eeg_specs_npy_path, read_files
+    ):
+        """
+        Reads EEG spectrogram data either from individual .npy files based on EEG IDs
+        or loads a pre-processed numpy file containing all EEG spectrograms.
+
+        Parameters:
+        - train_df: pandas.DataFrame, DataFrame with a column 'eeg_id' containing EEG IDs.
+        - read_files: bool, if True reads .npy files for each EEG ID, if False loads a pre-processed .npy file.
+        - eeg_spectrogram_path: str, path to the directory containing individual .npy EEG spectrogram files.
+        - eeg_specs_npy_path: str, path to the pre-processed .npy file containing all EEG spectrograms.
+
+        Returns:
+        - A dictionary with keys as EEG IDs and values as numpy arrays of the EEG spectrogram data.
+        """
+        all_eegs = {}
+        if read_files:
+            for i, e in enumerate(train_df["eeg_id"].values):
+                if i % 100 == 0:
+                    print(f"{i}, ", end="")
+                file_path = f"{eeg_spectrogram_path}{e}.npy"
+                x = np.load(file_path)
+                all_eegs[e] = x
+        else:
+            all_eegs = np.load(eeg_specs_npy_path, allow_pickle=True).item()
+
+        return all_eegs
+
+    @staticmethod
+    # DENOISE FUNCTION
+    def maddest(d, axis=None):
+        return np.mean(np.absolute(d - np.mean(d, axis)), axis)
+
+    @staticmethod
+    def denoise(x, wavelet="haar", level=1):
+        coeff = pywt.wavedec(x, wavelet, mode="per")
+        sigma = (1 / 0.6745) * Helpers.maddest(coeff[-level])
+
+        uthresh = sigma * np.sqrt(2 * np.log(len(x)))
+        coeff[1:] = (pywt.threshold(i, value=uthresh, mode="hard") for i in coeff[1:])
+
+        ret = pywt.waverec(coeff, wavelet, mode="per")
+
+        return ret
+
+    @staticmethod
+    def spectrogram_from_eeg(parquet_path, display=False, USE_WAVELET=None):
+
+        # LOAD MIDDLE 50 SECONDS OF EEG SERIES
+        eeg = pd.read_parquet(parquet_path)
+        middle = (len(eeg) - 10_000) // 2
+        eeg = eeg.iloc[middle : middle + 10_000]
+
+        # VARIABLE TO HOLD SPECTROGRAM
+        img = np.zeros((128, 256, 4), dtype="float32")
+
+        if display:
+            plt.figure(figsize=(10, 7))
+        signals = []
+        for k in range(4):
+            COLS = Helpers.FEATS[k]
+
+            for kk in range(4):
+
+                # COMPUTE PAIR DIFFERENCES
+                x = eeg[COLS[kk]].values - eeg[COLS[kk + 1]].values
+
+                # FILL NANS
+                m = np.nanmean(x)
+                if np.isnan(x).mean() < 1:
+                    x = np.nan_to_num(x, nan=m)
+                else:
+                    x[:] = 0
+
+                # DENOISE
+                if USE_WAVELET:
+                    x = Helpers.denoise(x, wavelet=USE_WAVELET)
+                signals.append(x)
+
+                # RAW SPECTROGRAM
+                mel_spec = librosa.feature.melspectrogram(
+                    y=x,
+                    sr=200,
+                    hop_length=len(x) // 256,
+                    n_fft=1024,
+                    n_mels=128,
+                    fmin=0,
+                    fmax=20,
+                    win_length=128,
+                )
+
+                # LOG TRANSFORM
+                width = (mel_spec.shape[1] // 32) * 32
+                mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max).astype(
+                    np.float32
+                )[:, :width]
+
+                # STANDARDIZE TO -1 TO 1
+                mel_spec_db = (mel_spec_db + 40) / 40
+                img[:, :, k] += mel_spec_db
+
+            # AVERAGE THE 4 MONTAGE DIFFERENCES
+            img[:, :, k] /= 4.0
+
+            if display:
+                plt.subplot(2, 2, k + 1)
+                plt.imshow(img[:, :, k], aspect="auto", origin="lower")
+                plt.title(f"EEG {1} - Spectrogram {Helpers.NAMES[k]}")
+
+        if display:
+            plt.show()
+            plt.figure(figsize=(10, 5))
+            offset = 0
+            for k in range(4):
+                if k > 0:
+                    offset -= signals[3 - k].min()
+                plt.plot(range(10_000), signals[k] + offset, label=Helpers.NAMES[3 - k])
+                offset += signals[3 - k].max()
+            plt.legend()
+            plt.title(f"EEG {2} Signals")
+            plt.show()
+            print()
+            print("#" * 25)
+            print()
+
+        return img
+
+    @staticmethod
+    def plot_spectrograms(
+        dataloader, train_data_preprocessed, ROWS=2, COLS=3, BATCHES=2
+    ):
+        """
+        Plots spectrograms from the dataloader batches along with their corresponding labels and EEG IDs.
+
+        Parameters:
+        - dataloader: DataLoader instance from which to draw batches of data.
+        - train_data_preprocessed: DataFrame containing preprocessed training data, including EEG IDs.
+        - ROWS: int, number of rows per figure.
+        - COLS: int, number of columns per figure.
+        - BATCHES: int, number of batches to plot before stopping.
+        """
+        for i, (x, y) in enumerate(dataloader):
+            plt.figure(figsize=(20, 8))
+            for j in range(ROWS):
+                for k in range(COLS):
+                    index = j * COLS + k
+                    if (
+                        index >= x.shape[0]
+                    ):  # Check to avoid index error in the last batch
+                        break
+                    plt.subplot(ROWS, COLS, index + 1)
+                    t = y[index]
+                    img = torch.flip(x[index, :, :, 0], (0,))
+                    mn = img.flatten().min()
+                    mx = img.flatten().max()
+                    img = (img - mn) / (mx - mn)
+                    plt.imshow(img)
+                    tars = f"[{t[0]:0.2f}]"
+                    for s in t[1:]:
+                        tars += f", {s:0.2f}"
+                    # Adjust the calculation of `eeg_id` index if necessary
+                    eeg_id_index = i * (ROWS * COLS) + index
+                    eeg = train_data_preprocessed.eeg_id.values[eeg_id_index]
+                    plt.title(f"EEG = {eeg}\nTarget = {tars}", size=12)
+                    plt.yticks([])
+                    plt.ylabel("Frequencies (Hz)", size=14)
+                    plt.xlabel("Time (sec)", size=16)
+            plt.show()
+            if i == BATCHES - 1:
+                break
+
+    @staticmethod
+    def cross_validate_eeg(
+        Config,
+        train_data_preprocessed,
+        spectrograms,
+        data_eeg_spectograms,
+        TARGETS,
+        n_splits=5,
+        batch_size_train=32,
+        batch_size_valid=64,
+        max_epochs=4,
+        num_workers=3,
+    ):
+        """
+        Performs cross-validation on EEG data using GroupKFold.
+
+        Parameters:
+        - train_data_preprocessed: DataFrame containing the training data.
+        - spectrograms: The preloaded spectrogram data.
+        - data_eeg_spectograms: Path or container with EEG spectrogram data.
+        - TARGETS: List of target columns in the training data.
+        - n_splits: Number of splits for cross-validation.
+        - batch_size_train: Batch size for training dataloader.
+        - batch_size_valid: Batch size for validation dataloader.
+        - max_epochs: Maximum number of epochs for training.
+        - num_workers: Number of workers for DataLoader.
+        """
+        all_oof = []
+        all_true = []
+        valid_loaders = []
+
+        gkf = GroupKFold(n_splits=n_splits)
+        for i, (train_index, valid_index) in enumerate(
+            gkf.split(
+                train_data_preprocessed,
+                train_data_preprocessed[TARGETS],
+                train_data_preprocessed.patient_id,
+            )
+        ):
+            print("#" * 25)
+            print(f"### Fold {i+1}")
+
+            train_ds = EEGDataset(
+                train_data_preprocessed.iloc[train_index],
+                spectrograms,
+                data_eeg_spectograms,
+                TARGETS,
+            )
+            train_loader = DataLoader(
+                train_ds,
+                shuffle=True,
+                batch_size=batch_size_train,
+                num_workers=num_workers,
+            )
+            valid_ds = EEGDataset(
+                train_data_preprocessed.iloc[valid_index],
+                spectrograms,
+                data_eeg_spectograms,
+                TARGETS,
+                mode="valid",
+            )
+            valid_loader = DataLoader(
+                valid_ds,
+                shuffle=False,
+                batch_size=batch_size_valid,
+                num_workers=num_workers,
+            )
+
+            print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
+            print("#" * 25)
+
+            trainer = pl.Trainer(max_epochs=max_epochs)
+            model = Trainer(Config.trained_weight_file)
+            if Config.trained_model_path is None:
+                trainer.fit(model=model, train_dataloaders=train_loader)
+                trainer.save_checkpoint(f"EffNet_v{Config.VER}_f{i}.ckpt")
+
+            valid_loaders.append(valid_loader)
+            all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
+
+            del trainer, model
+            gc.collect()
+
+        return all_oof, all_true, valid_loaders
