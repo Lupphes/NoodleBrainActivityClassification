@@ -1,7 +1,7 @@
 class Config:
     VER = 5
-    full_path = "/home/osloup/NoodleNappers/brain/data/"
-    competition_data_path = full_path + "hms-harmful-brain-activity-classification/"
+    full_path = "./data/"
+    competition_data_path = full_path
 
     output_path = full_path + "out/"
 
