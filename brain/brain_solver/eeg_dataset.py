@@ -23,7 +23,7 @@ class EEGDataset(Dataset):
     def __getitems__(self, indices):
         X, y = self._generate_data(indices)
         if self.augment:
-            X = self._augment(X)
+            X = self.__augment(X)
         if self.mode == "train":
             return list(zip(X, y))
         else:
