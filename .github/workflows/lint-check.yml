@@ -1,4 +1,4 @@
-name: Docker
+name: Linting
 
 on:
   schedule:
@@ -25,4 +25,4 @@ jobs:
         working-directory: brain
         run: |
           pip install black
-          black --check --config pyproject.toml .
+          black --check --config pyproject.toml . *.ipynb

@@ -443,3 +443,47 @@ class Helpers:
             gc.collect()
 
         return all_oof, all_true, valid_loaders
+
+    @staticmethod
+    def validate_model_across_folds(config, device, all_oof, all_true, valid_loaders):
+        """
+        Validates a model across different folds and returns the out-of-fold predictions.
+
+        Parameters:
+        - config: Configuration object with attributes like VER (version), trained_model_path, and trained_weight_file.
+        - device: The device (CPU or GPU) to run the validation on.
+        - valid_loaders: A list of DataLoader objects for validation, one for each fold.
+
+        Returns:
+        - all_oof: Numpy array of concatenated out-of-fold predictions.
+        """
+        for i in range(5):
+            print("#" * 25)
+            print(f"### Validating Fold {i+1}")
+
+            ckpt_file = (
+                f"EffNet_v{config.VER}_f{i}.ckpt"
+                if config.trained_model_path is None
+                else f"{config.trained_model_path}/EffNet_v{config.VER}_f{i}.ckpt"
+            )
+            model = Trainer.load_from_checkpoint(
+                ckpt_file, weight_file=config.trained_weight_file
+            )
+            model = model.to(device).eval()
+            with torch.inference_mode():  # Use inference mode for efficiency
+                for val_batch in valid_loaders[i]:
+                    val_batch = val_batch.to(
+                        device
+                    )  # Move validation batch to the correct device
+                    oof = (
+                        torch.softmax(model(val_batch), dim=1).cpu().numpy()
+                    )  # Get predictions
+                    all_oof.append(oof)  # Collect predictions
+            del model
+            gc.collect()
+            torch.cuda.empty_cache()
+
+        all_oof = np.concatenate(all_oof)
+        all_true = np.concatenate(all_true)
+
+        return all_oof, all_true
