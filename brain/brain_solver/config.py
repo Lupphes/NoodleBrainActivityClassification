@@ -15,6 +15,7 @@ class Config:
         USE_EEG_SPECTROGRAMS=True,
         should_read_brain_spectograms=True,
         should_read_eeg_spectrogram_files=True,
+        USE_PRETRAINED_MODEL=True,
     ):
         self.VER = VER
         self.num_classes = num_classes
@@ -41,10 +42,13 @@ class Config:
         self.data_spectograms = self.competition_data_path + "train_spectrograms/"
         self.data_spectograms_test = self.competition_data_path + "test_spectrograms/"
         self.data_eeg_test = self.competition_data_path + "test_eegs/"
-        self.trained_model_path = full_path + "hms-efficientnetb0-pt-ckpts/"
-        self.trained_weight_file = (
-            self.trained_model_path + "efficientnet_b0_rwightman-7f5810bc.pth"
-        )
+        self.trained_model_path = None
+        self.trained_weight_file = None
+        if USE_PRETRAINED_MODEL:
+            self.trained_model_path = full_path + "hms-efficientnetb0-pt-ckpts/"
+            self.trained_weight_file = (
+                self.trained_model_path + "efficientnet_b0_rwightman-7f5810bc.pth"
+            )
         self.path_to_brain_spectrograms_npy = full_path + "brain-spectrograms/specs.npy"
         self.path_to_brain_spectrograms_parquet = (
             full_path + "brain-spectrograms/train.pqt"

@@ -10,7 +10,8 @@ class Trainer(pl.LightningModule):
         self.use_kaggle_spectrograms = use_kaggle_spectrograms
         self.use_eeg_spectrograms = use_eeg_spectrograms
         self.base_model = efficientnet_b0()
-        self.base_model.load_state_dict(torch.load(weight_file))
+        if weight_file:
+            self.base_model.load_state_dict(torch.load(weight_file))
         # Update the classifier layer to match the number of target classes
         self.base_model.classifier[1] = nn.Linear(
             self.base_model.classifier[1].in_features, 6, dtype=torch.float32
