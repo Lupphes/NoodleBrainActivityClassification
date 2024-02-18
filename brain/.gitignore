@@ -1,3 +1,7 @@
 venv/
 env/
-data/
+
+data/*
+!data/kaggle-kl-div/
+
+submission.csv

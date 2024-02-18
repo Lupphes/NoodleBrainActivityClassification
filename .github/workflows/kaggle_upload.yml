@@ -1,0 +1,45 @@
+name: Upload Python Package to Kaggle
+
+on:
+  push:
+    branches:
+      - master
+      - feat-its-all-coming-together
+
+jobs:
+  upload_to_kaggle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r brain/requirements.txt
+          pip install kaggle
+          pip install wheel
+
+      - name: Build Python Package
+        run: |
+          cd brain
+          python setup.py sdist bdist_wheel
+          cp dataset-metadata.json dist/
+
+      - name: Authenticate with Kaggle
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir ~/.kaggle
+          echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Upload Package to Kaggle
+        run: |
+          kaggle datasets version -p dist -m "Updated via GitHub Actions"
+        working-directory: brain

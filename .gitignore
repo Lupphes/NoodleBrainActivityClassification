@@ -163,4 +163,6 @@ cython_debug/
 # Manual stuff
 venv/
 env/
-data/
+
+efficientnetb0-pytorch-starter-lb-0-40.ipynb
+requirements2.txt
