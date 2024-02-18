@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - feat-its-all-coming-together
+      - feat-change-training-loop
 
 jobs:
   upload_to_kaggle:
