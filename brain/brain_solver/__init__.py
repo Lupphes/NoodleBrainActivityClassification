@@ -3,5 +3,5 @@ from .filters import Filters
 from .trainer import Trainer
 from .eeg_dataset import EEGDataset
 from .config import Config
-from .wav2vev2_processing import Wav2VecProcessing
 from .brain_model import BrainModel
+from .wav2vec2 import Wav2Vec2
