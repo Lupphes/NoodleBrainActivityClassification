@@ -83,6 +83,18 @@ class BrainModel:
                 batch_size=batch_size_valid,
                 num_workers=num_workers,
             )
+            valid_ds_training = EEGDataset(
+                train_data_preprocessed.iloc[valid_index],
+                spectrograms,
+                data_eeg_spectograms,
+                TARGETS,
+            )
+            valid_loader_training = DataLoader(
+                valid_ds_training,
+                shuffle=False,
+                batch_size=batch_size_valid,
+                num_workers=num_workers,
+            )
 
             print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
             print("#" * 25)
@@ -104,7 +116,7 @@ class BrainModel:
                     criterion,
                     optimizer,
                     train_loader,
-                    valid_loader,
+                    valid_loader_training,
                     device,
                 )
                 # STORE THE MODEL EACH EPOCH AND MAKE GRAPH
