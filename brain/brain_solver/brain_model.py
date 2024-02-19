@@ -191,8 +191,9 @@ class BrainModel:
     #     return torch.softmax(self.forward(batch), dim=1)
     @staticmethod
     def accuracy(outputs, labels):
-        _, preds = torch.max(outputs, dim=1)
-        return torch.tensor(torch.sum(preds == labels).item() / len(preds))
+        print(outputs)
+        print(labels)
+        return torch.tensor(torch.sum(outputs == labels).item() / len(outputs))
 
     @staticmethod
     def validation_step(model, batch, criterion, device):
