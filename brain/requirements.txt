@@ -92,7 +92,7 @@ nvidia-nvtx-cu12==12.1.105
 opencv-python-headless==4.9.0.80
 overrides==7.7.0
 packaging==23.2
-pandas==2.2.0
+pandas==2.0.3
 pandocfilters==1.5.1
 parso==0.8.3
 pathspec==0.12.1
