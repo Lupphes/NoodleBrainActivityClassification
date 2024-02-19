@@ -75,3 +75,7 @@ This README should give a clear overview of the project and lay down some basic 
 - filter.py gives filtering functions for pre-processing (e.g. high pass + low pass), however as far as I can tell it is not yet used.
 - wav2vec2.py performs the wav2vec preprocessing. It is also not yet integrated anywhere.
 - setup.py makes sure all necessary packages are installed
+
+### Required input files for HMS competition
+
+![alt text](image.png)
