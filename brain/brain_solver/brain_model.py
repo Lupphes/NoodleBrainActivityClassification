@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from d2l import torch as d2l
 
 from sklearn.model_selection import GroupKFold
 from torch.utils.data import DataLoader
@@ -119,8 +120,10 @@ class BrainModel:
                     valid_loader_training,
                     device,
                 )
-                torch.save(model, config.output_path + f"EffNet_fold{i}")
-                #  MAKE GRAPH
+                torch.save(
+                    model,
+                    config.output_path + f"EffNet_version{config.VER}_fold{i}.pth",
+                )
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
@@ -185,7 +188,8 @@ class BrainModel:
         out = model(x)
         out = torch.log_softmax(out, dim=1)
         loss = criterion(out, y)
-        return loss
+        acc = BrainModel.custom_accuracy(out, y)
+        return loss, acc, len(y)
 
     # @staticmethod
     # def predict_step(self, batch, batch_idx, dataloader_idx=0):
@@ -239,21 +243,46 @@ class BrainModel:
     def train(
         model, num_epochs, criterion, optimizer, train_loader, val_loader, device
     ):
+        animator = d2l.Animator(
+            xlabel="epoch",
+            xlim=[1, num_epochs],
+            figsize=(10, 5),
+            legend=[
+                "train loss",
+                "train accuracy",
+                "validation loss",
+                "validation accuracy",
+            ],
+        )
         for epoch in range(num_epochs):
             print("Epoch: ", epoch + 1)
+            total_count = 0
+            total_loss = 0
+            total_accuracy = 0
             # Training Phase
             for batch in tqdm(train_loader):
                 # Calculate Loss
-                loss = BrainModel.training_step(model, batch, criterion, device)
+                loss, acc, len_y = BrainModel.training_step(
+                    model, batch, criterion, device
+                )
                 # Compute Gradients
                 loss.backward()
                 # Update weights
                 optimizer.step()
                 # Reset Gradients
                 optimizer.zero_grad()
+                total_count += len_y
+                total_loss += len_y * loss.item()
+                total_accuracy += len_y * acc
 
             # Validation Phase
+            train_loss = total_loss / total_count
+            train_accuracy = total_accuracy / total_count
             result = BrainModel.validate(model, val_loader, criterion, device)
             print(
                 f"val_loss: {result['val_loss']:.2f}, val_acc: {result['val_acc']:.2f}"
+            )
+            animator.add(
+                epoch + 1,
+                (train_loss, train_accuracy, result["val_loss"], result["val_acc"]),
             )
