@@ -189,11 +189,21 @@ class BrainModel:
     # @staticmethod
     # def predict_step(self, batch, batch_idx, dataloader_idx=0):
     #     return torch.softmax(self.forward(batch), dim=1)
+
     @staticmethod
-    def accuracy(outputs, labels):
-        print(outputs)
-        print(labels)
-        return torch.tensor(torch.sum(outputs == labels).item() / len(outputs))
+    def custom_accuracy(predicted_probs, true_probs):
+        # Convert predicted probabilities and true probabilities to numpy arrays
+        predicted_probs = np.array(torch.softmax(predicted_probs, dim=-1))
+        true_probs = np.array(true_probs)
+
+        # Calculate the absolute difference between predicted and true probabilities
+        abs_diff = np.abs(predicted_probs - true_probs)
+
+        # Calculate the accuracy as the percentage of overlap or similarity
+        # 1.0 minus the mean absolute difference normalized by the sum of true probabilities
+        accuracy = 1.0 - np.mean(abs_diff) / np.sum(true_probs)
+
+        return accuracy
 
     @staticmethod
     def validation_step(model, batch, criterion, device):
@@ -207,7 +217,7 @@ class BrainModel:
         # Calculate Loss
         loss = criterion(out, y)
         # Calculate Accuracy
-        acc = BrainModel.accuracy(out, y)
+        acc = BrainModel.custom_accuracy(out, y)
         return {"val_loss": loss, "val_acc": acc}
 
     @staticmethod
