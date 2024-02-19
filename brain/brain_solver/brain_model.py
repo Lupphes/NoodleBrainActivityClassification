@@ -165,7 +165,7 @@ class BrainModel:
         return all_oof, all_true
 
     @staticmethod
-    def training_step(self, model, batch, criterion, device):
+    def training_step(model, batch, criterion, device):
         x, y = batch
         x = x.to(device)
         y = y.to(device)
