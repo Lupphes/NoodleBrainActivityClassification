@@ -229,7 +229,7 @@ class BrainModel:
                 optimizer.zero_grad()
 
             # Validation Phase
-            result = BrainModel.validate(model, val_loader, criterion)
+            result = BrainModel.validate(model, val_loader, criterion, device)
             print(
                 f"val_loss: {result['val_loss']:.2f}, val_acc: {result['val_acc']:.2f}"
             )
