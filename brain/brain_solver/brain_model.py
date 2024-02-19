@@ -119,7 +119,8 @@ class BrainModel:
                     valid_loader_training,
                     device,
                 )
-                # STORE THE MODEL EACH EPOCH AND MAKE GRAPH
+                torch.save(model, config.output_path + f"EffNet_fold{i}")
+                #  MAKE GRAPH
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
@@ -201,9 +202,9 @@ class BrainModel:
 
         # Calculate the accuracy as the percentage of overlap or similarity
         # 1.0 minus the mean absolute difference normalized by the sum of true probabilities
-        accuracy = 1.0 - np.mean(abs_diff) / np.sum(true_probs)
+        accuracies = 1.0 - np.mean(abs_diff, axis=-1) / np.sum(true_probs, axis=-1)
 
-        return torch.tensor(accuracy)
+        return torch.tensor(np.mean(accuracies))
 
     @staticmethod
     def validation_step(model, batch, criterion, device):
