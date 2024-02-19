@@ -62,3 +62,16 @@ feat: Add new filter functionality
 ```
 
 This README should give a clear overview of the project and lay down some basic rules for collaboration.
+
+## Structure of HMS competition
+
+- training.ipynb is the notebook for the training workflow.
+- luppo_inter.ipynb is the notebook for the inference workflow.
+- brain_model.py provides the validation functions for the training notebook. It's only used by the training notebook.
+- config.py stores any model variables and makes sure the data paths are set up properly. It's used by the training and testing notebooks as well as by brain_model.py.
+- trainer.py provides the framework for the actual training process. It is used by the training workbook to perform training and by the inference notebook to load the trained model.
+- eeg_dataset.py provides a class framework for storing the data set in, so that it can be interpreted by torch's data loader. It's used by both notebooks.
+- helpers.py provides a variety of helper functions (e.g. loading csv files and reading/plotting spectrograms). It is used heavily used by both notebooks.
+- filter.py gives filtering functions for pre-processing (e.g. high pass + low pass), however as far as I can tell it is not yet used.
+- wav2vec2.py performs the wav2vec preprocessing. It is also not yet integrated anywhere.
+- setup.py makes sure all necessary packages are installed

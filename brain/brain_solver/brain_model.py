@@ -107,7 +107,7 @@ class BrainModel:
                     valid_loader,
                     device,
                 )
-                # STORE THE MODEL EACH EPOCH
+                # STORE THE MODEL EACH EPOCH AND MAKE GRAPH
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
