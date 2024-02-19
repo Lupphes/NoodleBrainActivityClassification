@@ -15,5 +15,6 @@ setup(
         "scipy",
         "pytorch_lightning",
         "torchvision",
+        "d2l",
     ],
 )
