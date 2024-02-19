@@ -193,8 +193,8 @@ class BrainModel:
     @staticmethod
     def custom_accuracy(predicted_probs, true_probs):
         # Convert predicted probabilities and true probabilities to numpy arrays
-        predicted_probs = np.array(torch.softmax(predicted_probs, dim=-1))
-        true_probs = np.array(true_probs)
+        predicted_probs = torch.softmax(predicted_probs, dim=-1).detach().cpu().numpy()
+        true_probs = true_probs.detach().cpu().numpy()
 
         # Calculate the absolute difference between predicted and true probabilities
         abs_diff = np.abs(predicted_probs - true_probs)
@@ -203,7 +203,7 @@ class BrainModel:
         # 1.0 minus the mean absolute difference normalized by the sum of true probabilities
         accuracy = 1.0 - np.mean(abs_diff) / np.sum(true_probs)
 
-        return accuracy
+        return torch.tensor(accuracy)
 
     @staticmethod
     def validation_step(model, batch, criterion, device):
