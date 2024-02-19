@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+import torch.nn as nn
+from tqdm import tqdm
 
 from sklearn.model_selection import GroupKFold
 from torch.utils.data import DataLoader
@@ -9,12 +11,14 @@ import gc
 
 from .eeg_dataset import EEGDataset
 from .trainer import Trainer as tr
+from .network import Network
 
 
 class BrainModel:
     @staticmethod
     def cross_validate_eeg(
         config,
+        device,
         train_data_preprocessed,
         spectrograms,
         data_eeg_spectograms,
@@ -83,15 +87,27 @@ class BrainModel:
             print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
             print("#" * 25)
 
-            trainer = pl.Trainer(max_epochs=max_epochs)
-            model = tr(
+            # trainer = pl.Trainer(max_epochs=max_epochs)
+            model = Network(
                 config.trained_weight_file,
                 config.USE_KAGGLE_SPECTROGRAMS,
                 config.USE_EEG_SPECTROGRAMS,
-            )
+            ).to(device)
             if config.trained_model_path is None:
-                trainer.fit(model=model, train_dataloaders=train_loader)
-                trainer.save_checkpoint(f"EffNet_v{config.VER}_f{i}.ckpt")
+                # trainer.fit(model=model, train_dataloaders=train_loader)
+                # trainer.save_checkpoint(f"EffNet_v{config.VER}_f{i}.ckpt")
+                criterion = nn.KLDivLoss(reduction="batchmean")
+                optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+                BrainModel.train(
+                    model,
+                    max_epochs,
+                    criterion,
+                    optimizer,
+                    train_loader,
+                    valid_loader,
+                    device,
+                )
+                # STORE THE MODEL EACH EPOCH
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
@@ -147,3 +163,73 @@ class BrainModel:
         all_true = np.concatenate(all_true)
 
         return all_oof, all_true
+
+    @staticmethod
+    def training_step(self, model, batch, criterion, device):
+        x, y = batch
+        x = x.to(device)
+        y = y.to(device)
+        out = model(x)
+        out = torch.log_softmax(out, dim=1)
+        loss = criterion(out, y)
+        return loss
+
+    # @staticmethod
+    # def predict_step(self, batch, batch_idx, dataloader_idx=0):
+    #     return torch.softmax(self.forward(batch), dim=1)
+    @staticmethod
+    def accuracy(outputs, labels):
+        _, preds = torch.max(outputs, dim=1)
+        return torch.tensor(torch.sum(preds == labels).item() / len(preds))
+
+    @staticmethod
+    def validation_step(model, batch, criterion, device):
+        # Prepare batch data
+        x, y = batch
+        x = x.to(device)
+        y = y.to(device)
+        # Generate predictions
+        out = model(x)
+        out = torch.log_softmax(out, dim=1)
+        # Calculate Loss
+        loss = criterion(out, y)
+        # Calculate Accuracy
+        acc = BrainModel.accuracy(out, y)
+        return {"val_loss": loss, "val_acc": acc}
+
+    @staticmethod
+    def validate(model, val_loader, criterion, device):
+        with torch.no_grad():
+            model.eval()
+            outputs = [
+                BrainModel.validation_step(model, batch, criterion, device)
+                for batch in tqdm(val_loader)
+            ]
+            batch_losses = [x["val_loss"] for x in outputs]
+            epoch_loss = torch.stack(batch_losses).mean()
+            batch_accs = [x["val_acc"] for x in outputs]
+            epoch_acc = torch.stack(batch_accs).mean()
+            return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
+
+    @staticmethod
+    def train(
+        model, num_epochs, criterion, optimizer, train_loader, val_loader, device
+    ):
+        for epoch in range(num_epochs):
+            print("Epoch: ", epoch + 1)
+            # Training Phase
+            for batch in tqdm(train_loader):
+                # Calculate Loss
+                loss = BrainModel.training_step(model, batch, criterion, device)
+                # Compute Gradients
+                loss.backward()
+                # Update weights
+                optimizer.step()
+                # Reset Gradients
+                optimizer.zero_grad()
+
+            # Validation Phase
+            result = BrainModel.validate(model, val_loader, criterion)
+            print(
+                f"val_loss: {result['val_loss']:.2f}, val_acc: {result['val_acc']:.2f}"
+            )
