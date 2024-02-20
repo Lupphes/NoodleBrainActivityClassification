@@ -3,7 +3,7 @@ class Config:
         self,
         full_path,
         output_path,
-        VER=5,
+        VER=1,
         num_classes=6,
         batch_size=88,
         epochs=20,

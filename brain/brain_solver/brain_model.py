@@ -100,15 +100,12 @@ class BrainModel:
             print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
             print("#" * 25)
 
-            # trainer = pl.Trainer(max_epochs=max_epochs)
             model = Network(
                 config.trained_weight_file,
                 config.USE_KAGGLE_SPECTROGRAMS,
                 config.USE_EEG_SPECTROGRAMS,
             ).to(device)
             if config.trained_model_path is None:
-                # trainer.fit(model=model, train_dataloaders=train_loader)
-                # trainer.save_checkpoint(f"EffNet_v{config.VER}_f{i}.ckpt")
                 criterion = nn.KLDivLoss(reduction="batchmean")
                 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
                 BrainModel.train(
@@ -122,13 +119,13 @@ class BrainModel:
                 )
                 torch.save(
                     model,
-                    config.output_path + f"EffNet_version{config.VER}_fold{i}.pth",
+                    config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
                 )
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
 
-            del trainer, model
+            del model
             gc.collect()
 
         return all_oof, all_true, valid_loaders
@@ -151,15 +148,12 @@ class BrainModel:
             print(f"### Validating Fold {i+1}")
 
             ckpt_file = (
-                f"EffNet_v{config.VER}_f{i}.ckpt"
+                f"EffNet_version{config.VER}_fold{i+1}.pth"
                 if config.trained_model_path is None
                 else f"{config.trained_model_path}/EffNet_v{config.VER}_f{i}.ckpt"
             )
-            model = tr.load_from_checkpoint(
-                ckpt_file,
-                weight_file=config.trained_weight_file,
-                use_kaggle_spectrograms=config.USE_KAGGLE_SPECTROGRAMS,
-                use_eeg_spectrograms=config.USE_EEG_SPECTROGRAMS,
+            model = torch.load(
+                config.output_path + ckpt_file,
             )
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency
