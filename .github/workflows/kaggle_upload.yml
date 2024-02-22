@@ -6,6 +6,7 @@ on:
       - master
       - feat-its-all-coming-together
       - feat-change-training-loop
+      - feat-integrate-wav2vec
 
 jobs:
   upload_to_kaggle:
