@@ -32,14 +32,6 @@ class Wav2Vec2:
         """
         Pre-processes the data for use by wav2vec2.
         """
-
-        # Possible issue (discuss next meeting): wav2vec2 prefers if its data is sampled
-        # at 16 000 Hz. This is just barely doable for the 50 sec EEG data packets if we
-        # make sure to process each 1D waveform individually, however for the 600 sec
-        # (and inherently 2D) spectrograms this is just plain infeasible. I have therefore
-        # elected to not do any resampling for the spectrograms. In the future, it might
-        # be a neat idea to try to resample to slightly higher frequencies to see if
-        # that improves performance.
     
         model = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
         data_normalized = model(data, sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE, return_tensors="pt", padding=True)
