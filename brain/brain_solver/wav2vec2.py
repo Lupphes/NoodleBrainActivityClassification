@@ -8,7 +8,6 @@ class Wav2Vec2:
     CHANNELS = ['Fp1', 'F7', 'T3', 'T5', 'O1', 'F3', 'C3', 'P3', 'Fz', 'Cz', 'Pz', 'Fp2', 'F4', 'C4', 'P4', 'O2', 'F8', 'T4', 'T6']
     SAMPLING_RATE = 200
     TARGET_SAMPLING_RATE = 16000
-    SAMPLING_REDUCTION = 20
 
     @staticmethod
     def preprocess_eeg_data(data):
@@ -71,7 +70,6 @@ class Wav2Vec2:
 
         dir_path = data_path + "w2v_eegs/" + out_filename + "/"
         os.mkdir(dir_path)
-        print(w2v_output)
         for i, channel in enumerate(Wav2Vec2.CHANNELS):
             channel_path = dir_path + channel + ".parquet"
             pd.DataFrame.to_parquet(w2v_output[i], path=channel_path)
@@ -84,14 +82,14 @@ class Wav2Vec2:
 
         Arguments:
         - data (ndarray): data from a single spectrogram.
-        - data_path: the path leading to the data folder.
+        - data_path: the path leading to the w2v_specs folder.
         - out_filename: the desired name of the output file (for the sake of consistency: without .parquet).
         """
-        
-        data_preprocessed = Wav2Vec2.preprocess_spec_data(data)
-        w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
 
-        write_path = data_path + "w2v_specs/" + out_filename + ".parquet"
-        pd.DataFrame.to_parquet(w2v_output[0], path=write_path)
+        write_path = data_path + out_filename + ".parquet"
+        if not os.path.isfile(write_path):
+            data_preprocessed = Wav2Vec2.preprocess_spec_data(data)
+            w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
+            pd.DataFrame.to_parquet(w2v_output[0], path=write_path)
 
 

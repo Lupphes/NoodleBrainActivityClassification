@@ -165,7 +165,11 @@ class Helpers:
             for i, f in enumerate(files):
                 if i % 100 == 0:
                     print(i, ", ", end="")
-                tmp = pd.read_parquet(os.path.join(path, f))
+                try:
+                    tmp = pd.read_parquet(os.path.join(path, f))
+                except:
+                    pass
+
                 name = int(f.split(".")[0])
                 spectrograms[name] = tmp.iloc[:, 1:].values
         else:
