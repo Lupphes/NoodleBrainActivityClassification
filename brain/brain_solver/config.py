@@ -42,6 +42,8 @@ class Config:
         self.data_spectograms = self.competition_data_path + "train_spectrograms/"
         self.data_spectograms_test = self.competition_data_path + "test_spectrograms/"
         self.data_eeg_test = self.competition_data_path + "test_eegs/"
+        self.data_w2v_eegs = self.output_path + "w2v_eegs/"
+        self.data_w2v_specs = self.output_path + "w2v_specs/"
         self.trained_model_path = None
         self.trained_weight_file = None
         if USE_PRETRAINED_MODEL:
