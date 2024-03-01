@@ -54,7 +54,7 @@ class Wav2Vec2:
         return w2v_output
 
     @staticmethod
-    def wav2vec2_eeg(data, data_path, out_filename):
+    def wav2vec2(data, proc_eegs=False):
         """
         Applies the Wav2Vec2 algorithm to the raw EEG data given as argument
         and writes the result to a folder data/w2v_eegs
@@ -65,31 +65,9 @@ class Wav2Vec2:
         - out_filename: the desired name of the output file (preferrably the parquet filename without .parquet).
         """
         
-        data_preprocessed = Wav2Vec2.preprocess_eeg_data(data)
-        w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
-
-        dir_path = data_path + "w2v_eegs/" + out_filename + "/"
-        os.mkdir(dir_path)
-        for i, channel in enumerate(Wav2Vec2.CHANNELS):
-            channel_path = dir_path + channel + ".parquet"
-            pd.DataFrame.to_parquet(w2v_output[i], path=channel_path)
-
-    @staticmethod
-    def wav2vec2_spec(data, data_path, out_filename):
-        """
-        Applies the Wav2Vec2 algorithm to the spectrogram data given as argument
-        and writes the result to a file in data/w2v_specs
-
-        Arguments:
-        - data (ndarray): data from a single spectrogram.
-        - data_path: the path leading to the w2v_specs folder.
-        - out_filename: the desired name of the output file (for the sake of consistency: without .parquet).
-        """
-
-        write_path = data_path + out_filename + ".parquet"
-        if not os.path.isfile(write_path):
+        if proc_eegs:
+            data_preprocessed = Wav2Vec2.preprocess_eeg_data(data)
+        else:
             data_preprocessed = Wav2Vec2.preprocess_spec_data(data)
-            w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
-            pd.DataFrame.to_parquet(w2v_output[0], path=write_path)
-
-
+        w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
+        return w2v_output
