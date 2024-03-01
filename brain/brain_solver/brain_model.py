@@ -105,22 +105,30 @@ class BrainModel:
                 config.USE_KAGGLE_SPECTROGRAMS,
                 config.USE_EEG_SPECTROGRAMS,
             ).to(device)
-            if config.trained_model_path is None:
-                criterion = nn.KLDivLoss(reduction="batchmean")
-                optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
-                BrainModel.train(
-                    model,
-                    max_epochs,
-                    criterion,
-                    optimizer,
-                    train_loader,
-                    valid_loader_training,
-                    device,
-                )
-                torch.save(
-                    model,
-                    config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
-                )
+            for param in model.base_model.parameters():
+                param.requires_grad = False
+
+            for param in model.base_model._blocks[
+                -4:
+            ].parameters():  # Unfreeze the last 4 blocks
+                param.requires_grad = True
+
+            # if config.trained_model_path is None:
+            criterion = nn.KLDivLoss(reduction="batchmean")
+            optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
+            BrainModel.train(
+                model,
+                max_epochs,
+                criterion,
+                optimizer,
+                train_loader,
+                valid_loader_training,
+                device,
+            )
+            torch.save(
+                model,
+                config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
+            )
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
