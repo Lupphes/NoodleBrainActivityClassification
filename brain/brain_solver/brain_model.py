@@ -11,7 +11,6 @@ import pytorch_lightning as pl
 import gc
 
 from .eeg_dataset import EEGDataset
-from .trainer import Trainer as tr
 from .network import Network
 
 
