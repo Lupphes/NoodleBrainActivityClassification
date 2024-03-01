@@ -3,7 +3,6 @@ from torchaudio.transforms import Resample
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import pandas as pd
 import os
-import numpy as np
 
 
 class Wav2Vec2:
@@ -90,23 +89,20 @@ class Wav2Vec2:
         return w2v_output
 
     @staticmethod
-    def wav2vec2(data, out_path, proc_eegs=False):
+    def wav2vec2(data, proc_eegs=False):
         """
         Applies the Wav2Vec2 algorithm to the raw EEG data given as argument
         and writes the result to a folder data/w2v_eegs
 
         Arguments:
-        - data: the data which should be processed with wav2vec
-        - out_path: the path to which the files should be output
-        - proc_eegs: whether the function should process the input as EEGs or spectrograms
+        - data (ndarray): raw EEG data from a parquet file.
+        - data_path: the path leading to the data folder.
+        - out_filename: the desired name of the output file (preferrably the parquet filename without .parquet).
         """
-        w2v_processed = {}
-        for name, it in data.items():
-            if proc_eegs:
-                data_preprocessed = Wav2Vec2.preprocess_eeg_data(it)
-            else:
-                data_preprocessed = Wav2Vec2.preprocess_spec_data(it)
-            out = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
-            np.save(out_path + str(name), out)
-            w2v_processed[name] = out
-        np.save("w2v_specs2", w2v_processed)
+
+        if proc_eegs:
+            data_preprocessed = Wav2Vec2.preprocess_eeg_data(data)
+        else:
+            data_preprocessed = Wav2Vec2.preprocess_spec_data(data)
+        w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
+        return w2v_output
