@@ -89,7 +89,7 @@ class Wav2Vec2:
         return w2v_output
 
     @staticmethod
-    def wav2vec2(data, proc_eegs=False):
+    def wav2vec2(parquet_file, proc_eegs=False):
         """
         Applies the Wav2Vec2 algorithm to the raw EEG data given as argument
         and writes the result to a folder data/w2v_eegs
@@ -101,8 +101,8 @@ class Wav2Vec2:
         """
 
         if proc_eegs:
-            data_preprocessed = Wav2Vec2.preprocess_eeg_data(data)
+            data_preprocessed = Wav2Vec2.preprocess_eeg_data(parquet_file)
         else:
-            data_preprocessed = Wav2Vec2.preprocess_spec_data(data)
+            data_preprocessed = Wav2Vec2.preprocess_spec_data(parquet_file)
         w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
         return w2v_output
