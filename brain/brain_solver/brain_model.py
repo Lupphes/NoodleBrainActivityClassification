@@ -107,7 +107,7 @@ class BrainModel:
             ).to(device)
             if config.trained_model_path is None:
                 criterion = nn.KLDivLoss(reduction="batchmean")
-                optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+                optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
                 BrainModel.train(
                     model,
                     max_epochs,
@@ -185,10 +185,6 @@ class BrainModel:
         acc = BrainModel.custom_accuracy(out, y)
         return loss, acc, len(y)
 
-    # @staticmethod
-    # def predict_step(self, batch, batch_idx, dataloader_idx=0):
-    #     return torch.softmax(self.forward(batch), dim=1)
-
     @staticmethod
     def custom_accuracy(predicted_probs, true_probs):
         # Convert predicted probabilities and true probabilities to numpy arrays
@@ -248,6 +244,8 @@ class BrainModel:
                 "validation accuracy",
             ],
         )
+        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+
         for epoch in range(num_epochs):
             print("Epoch: ", epoch + 1)
             total_count = 0
@@ -270,6 +268,9 @@ class BrainModel:
                 total_count += len_y
                 total_loss += len_y * loss.item()
                 total_accuracy += len_y * acc
+
+            # Update learning rate
+            lr_scheduler.step()
 
             # Validation Phase
             train_loss = total_loss / total_count
