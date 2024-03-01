@@ -5,8 +5,29 @@ import pandas as pd
 import os
 import numpy as np
 
+
 class Wav2Vec2:
-    CHANNELS = ['Fp1', 'F7', 'T3', 'T5', 'O1', 'F3', 'C3', 'P3', 'Fz', 'Cz', 'Pz', 'Fp2', 'F4', 'C4', 'P4', 'O2', 'F8', 'T4', 'T6']
+    CHANNELS = [
+        "Fp1",
+        "F7",
+        "T3",
+        "T5",
+        "O1",
+        "F3",
+        "C3",
+        "P3",
+        "Fz",
+        "Cz",
+        "Pz",
+        "Fp2",
+        "F4",
+        "C4",
+        "P4",
+        "O2",
+        "F8",
+        "T4",
+        "T6",
+    ]
     SAMPLING_RATE = 200
     TARGET_SAMPLING_RATE = 16000
 
@@ -15,29 +36,43 @@ class Wav2Vec2:
         """
         Pre-processes the data for use by wav2vec2.
         """
-    
-        resampler = Resample(orig_freq=Wav2Vec2.SAMPLING_RATE, new_freq=Wav2Vec2.TARGET_SAMPLING_RATE, dtype=torch.float64)
+
+        resampler = Resample(
+            orig_freq=Wav2Vec2.SAMPLING_RATE,
+            new_freq=Wav2Vec2.TARGET_SAMPLING_RATE,
+            dtype=torch.float64,
+        )
         model = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 
         data_preprocessed = []
         for i in range(len(Wav2Vec2.CHANNELS)):
             data_resampled = resampler(torch.tensor(data[i]).unsqueeze(0)).numpy()[0]
-            data_normalized = model(data_resampled, sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE, return_tensors="pt", padding=True)
+            data_normalized = model(
+                data_resampled,
+                sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE,
+                return_tensors="pt",
+                padding=True,
+            )
             data_preprocessed.append(data_normalized)
 
         return data_preprocessed
-    
+
     @staticmethod
     def preprocess_spec_data(data):
         """
         Pre-processes the data for use by wav2vec2.
         """
-    
+
         model = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
-        data_normalized = model(data, sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE, return_tensors="pt", padding=True)
+        data_normalized = model(
+            data,
+            sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE,
+            return_tensors="pt",
+            padding=True,
+        )
 
         return [data_normalized]
-    
+
     @staticmethod
     def process_with_wav2vec2(data):
         """
@@ -51,7 +86,7 @@ class Wav2Vec2:
             outputs = model(**ch_data, output_hidden_states=True)
             features = outputs.hidden_states[-1][0]
             w2v_output.append(pd.DataFrame(features.detach().numpy()))
-        
+
         return w2v_output
 
     @staticmethod
@@ -74,4 +109,4 @@ class Wav2Vec2:
             out = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
             np.save(out_path + str(name), out)
             w2v_processed[name] = out
-        np.save('w2v_specs2', w2v_processed)
+        np.save("w2v_specs2", w2v_processed)
