@@ -1,5 +1,5 @@
 from .helpers import Helpers
-from .filters import Filters
+from .filters import Filters, FilterType
 from .trainer import Trainer
 from .eeg_dataset import EEGDataset
 from .config import Config
