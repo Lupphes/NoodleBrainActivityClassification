@@ -162,7 +162,14 @@ class BrainModel:
                 if config.trained_model_path is None
                 else f"{config.trained_model_path}EffNet_v{config.VER}_f{i}.ckpt"
             )
-            model = torch.load(ckpt_file)
+            if config.trained_model_path is None:
+                model = torch.load(ckpt_file)
+            else:
+                model = Network(
+                    torch.load(ckpt_file)["model_state_dict"],
+                    config.USE_KAGGLE_SPECTROGRAMS,
+                    config.USE_EEG_SPECTROGRAMS,
+                )
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency
                 for val_batch in valid_loaders[i]:
