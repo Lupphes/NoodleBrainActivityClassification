@@ -112,22 +112,26 @@ class BrainModel:
             ].parameters():  # Unfreeze the last 4 blocks
                 param.requires_grad = True
 
-            # if config.trained_model_path is None:
-            criterion = nn.KLDivLoss(reduction="batchmean")
-            optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
-            BrainModel.train(
-                model,
-                max_epochs,
-                criterion,
-                optimizer,
-                train_loader,
-                valid_loader_training,
-                device,
-            )
-            torch.save(
-                model,
-                config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
-            )
+            if config.trained_model_path is None or config.FINE_TUNE:
+                if config.FINE_TUNE:
+                    # Freeze layers?
+                    # add more layers to model?
+                    i = 0  # REMOVE
+                criterion = nn.KLDivLoss(reduction="batchmean")
+                optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
+                BrainModel.train(
+                    model,
+                    max_epochs,
+                    criterion,
+                    optimizer,
+                    train_loader,
+                    valid_loader_training,
+                    device,
+                )
+                torch.save(
+                    model,
+                    config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
+                )
 
             valid_loaders.append(valid_loader)
             all_true.append(train_data_preprocessed.iloc[valid_index][TARGETS].values)
