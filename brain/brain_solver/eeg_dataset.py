@@ -107,7 +107,7 @@ class EEGDataset(Dataset):
             return X
 
     def _generate_data(self, indexes):
-        X = np.zeros((len(indexes), 1, 768), dtype="float32")
+        X = np.zeros((len(indexes), 1, 768, 8), dtype="float32")
         y = np.zeros((len(indexes), 6), dtype="float32")
         
         for j, i in enumerate(indexes):
@@ -134,8 +134,8 @@ class EEGDataset(Dataset):
 
             #     # CROP TO 256 TIME STEPS
             #     X[j, 14:-14, :, k] = img[:, 22:-22] / 2.0
-
-            X[j, :, :] = self.latent_specs[row.spec_id]
+            for k in range(4):
+                X[j, :, :, k] = self.latent_specs[row.spec_id]
 
             # EEG spectrograms
             #img = self.eeg_specs[row.eeg_id]
