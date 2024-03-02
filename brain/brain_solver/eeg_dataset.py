@@ -134,8 +134,9 @@ class EEGDataset(Dataset):
 
             #     # CROP TO 256 TIME STEPS
             #     X[j, 14:-14, :, k] = img[:, 22:-22] / 2.0
-            for k in range(4):
-                X[j, :, :, k] = self.latent_specs[row.spec_id]
+            if not np.isnan(self.latent_specs[row.spec_id][0][0][0]):
+                for k in range(4):
+                    X[j, :, :, k] = self.latent_specs[row.spec_id]
 
             # EEG spectrograms
             #img = self.eeg_specs[row.eeg_id]
