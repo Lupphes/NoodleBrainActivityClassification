@@ -158,15 +158,12 @@ class BrainModel:
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency
                 for val_batch in valid_loaders[i]:
-                    print(val_batch)
                     val_batch = val_batch.to(
                         device
                     )  # Move validation batch to the correct device
-                    print(val_batch)
                     oof = (
                         torch.softmax(model(val_batch), dim=1).cpu().numpy()
                     )  # Get predictions
-                    print(oof)
                     all_oof.append(oof)  # Collect predictions
             del model
             gc.collect()
