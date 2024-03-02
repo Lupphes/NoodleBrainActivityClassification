@@ -17,9 +17,7 @@ class Network(nn.Module):
         self.base_model = efficientnet_b0()
         if weight_file:
             if validation:
-                self.base_model.load_state_dict(
-                    torch.load(weight_file)["model_state_dict"]
-                )
+                self.base_model.load_state_dict(torch.load(weight_file)["state_dict"])
             else:
                 self.base_model.load_state_dict(torch.load(weight_file))
         # Update the classifier layer to match the number of target classes
