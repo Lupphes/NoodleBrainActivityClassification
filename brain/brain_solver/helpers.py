@@ -336,11 +336,12 @@ class Helpers:
                         break
                     plt.subplot(ROWS, COLS, index + 1)
                     t = y[index]
-                    img = torch.flip(x[index, :, :, 0], (0,))
+                    img = torch.flip(x[index, :, :], (0,)).T
                     mn = img.flatten().min()
                     mx = img.flatten().max()
                     img = (img - mn) / (mx - mn)
-                    plt.imshow(img)
+                    plt.plot(img)
+
                     tars = f"[{t[0]:0.2f}]"
                     for s in t[1:]:
                         tars += f", {s:0.2f}"
@@ -348,9 +349,9 @@ class Helpers:
                     eeg_id_index = i * (ROWS * COLS) + index
                     eeg = train_data_preprocessed.eeg_id.values[eeg_id_index]
                     plt.title(f"EEG = {eeg}\nTarget = {tars}", size=12)
-                    plt.yticks([])
-                    plt.ylabel("Frequencies (Hz)", size=14)
-                    plt.xlabel("Time (sec)", size=16)
+                    plt.ylabel("y", size=14)
+                    plt.xlabel("x", size=14)
             plt.show()
+            
             if i == BATCHES - 1:
                 break
