@@ -20,8 +20,8 @@ class Network(nn.Module):
     def forward(self, x):
         # Split the input into two groups
         # TEMPORARY SOLUTION
-        x1 = x
-        x2 = x
+        x1 = [x]
+        x2 = [x]
         #x1 = [x[:, :, :, i : i + 1] for i in range(4)]
         #x1 = torch.concat(x1, dim=1)
         #x2 = [x[:, :, :, i + 4 : i + 5] for i in range(4)]
