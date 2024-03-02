@@ -104,19 +104,18 @@ class BrainModel:
                 config.USE_KAGGLE_SPECTROGRAMS,
                 config.USE_EEG_SPECTROGRAMS,
             ).to(device)
-            for param in model.base_model.parameters():
-                param.requires_grad = False
-
-            for param in model.base_model._blocks[
-                -4:
-            ].parameters():  # Unfreeze the last 4 blocks
-                param.requires_grad = True
 
             if config.trained_model_path is None or config.FINE_TUNE:
                 if config.FINE_TUNE:
                     # Freeze layers?
                     # add more layers to model?
-                    i = 0  # REMOVE
+                    for param in model.base_model.parameters():
+                        param.requires_grad = False
+
+                    # for param in model.base_model._blocks[
+                    #     -4:
+                    # ].parameters():  # Unfreeze the last 4 blocks
+                    #     param.requires_grad = True
                 criterion = nn.KLDivLoss(reduction="batchmean")
                 optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
                 BrainModel.train(
