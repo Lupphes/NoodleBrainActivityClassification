@@ -336,7 +336,7 @@ class Helpers:
                         break
                     plt.subplot(ROWS, COLS, index + 1)
                     t = y[index]
-                    img = torch.flip(x[index, :, :], (0,)).T
+                    img = torch.flip(x[index, :, :, 0], (0,)).T
                     mn = img.flatten().min()
                     mx = img.flatten().max()
                     img = (img - mn) / (mx - mn)
@@ -352,6 +352,6 @@ class Helpers:
                     plt.ylabel("y", size=14)
                     plt.xlabel("x", size=14)
             plt.show()
-            
+
             if i == BATCHES - 1:
                 break

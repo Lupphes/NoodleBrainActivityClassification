@@ -19,13 +19,10 @@ class Network(nn.Module):
 
     def forward(self, x):
         # Split the input into two groups
-        # TEMPORARY SOLUTION
-        x1 = x
-        x2 = x
-        #x1 = [x[:, :, :, i : i + 1] for i in range(4)]
-        #x1 = torch.concat(x1, dim=1)
-        #x2 = [x[:, :, :, i + 4 : i + 5] for i in range(4)]
-        #x2 = torch.concat(x2, dim=1)
+        x1 = [x[:, :, :, i : i + 1] for i in range(4)]
+        x1 = torch.concat(x1, dim=1)
+        x2 = [x[:, :, :, i + 4 : i + 5] for i in range(4)]
+        x2 = torch.concat(x2, dim=1)
 
         # Select the appropriate input based on initialization parameters
         if self.use_kaggle_spectrograms and self.use_eeg_spectrograms:
@@ -36,8 +33,11 @@ class Network(nn.Module):
             x = x1
 
         # Expand the input to have 3 channels
+        print(x.shape)
         x = torch.concat([x, x, x], dim=3)
+        print(x.shape)
         x = x.permute(0, 3, 1, 2)
+        print(x.shape)
 
         out = self.base_model(x)
         return out
