@@ -39,7 +39,7 @@ class Wav2Vec2:
         resampler = Resample(
             orig_freq=Wav2Vec2.SAMPLING_RATE,
             new_freq=Wav2Vec2.TARGET_SAMPLING_RATE,
-            dtype=torch.float64,
+            dtype=torch.float32,
         )
         model = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 

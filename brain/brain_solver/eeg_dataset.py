@@ -81,3 +81,72 @@ class EEGDataset(Dataset):
         for i in range(img_batch.shape[0]):
             img_batch[i,] = self._random_transform(img_batch[i,])
         return img_batch
+
+class LatentEEGDataset(Dataset):
+    def __init__(self, data, latent_specs, eeg_specs, targets, augment=False, mode="train"):
+        self.data = data
+        self.latent_specs = latent_specs  # Latent space representations
+        self.eeg_specs = eeg_specs
+        self.targets = targets
+        self.augment = augment
+        self.mode = mode
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.__getitems__([index])
+
+    def __getitems__(self, indices):
+        X, y = self._generate_data(indices)
+        if self.augment:
+            X = self.__augment(X)
+        if self.mode == "train":
+            return list(zip(X, y))
+        else:
+            return X
+
+    def _generate_data(self, indexes):
+        # Adjust the dimensions of X and img to accommodate latent space representations
+        X = np.zeros((len(indexes), 1, 768, 8), dtype="float32")
+        y = np.zeros((len(indexes), 6), dtype="float32")
+        
+        for j, i in enumerate(indexes):
+            row = self.data.iloc[i]
+            if self.mode == "test":
+                r = 0
+            else:
+                r = int((row["min_offset"] + row["max_offset"]) // 4)
+
+            for k in range(4):
+                # Assuming latent_specs have the necessary dimensions
+                img = self.latent_specs[row.spec_id]  # Assuming this provides latent space representation
+
+                # Assuming necessary preprocessing steps for latent space representation
+                # e.g., standardization, normalization, etc.
+
+                # Crop to 256 time steps
+                X[j, :, :, k] = img[:, :256] / 2.0
+
+            # EEG spectrograms
+            #img = self.eeg_specs[row.eeg_id]
+            #X[j, :, :, 4:] = img
+
+            if self.mode != "test":
+                y[j,] = row[self.targets]
+
+        return X, y
+
+    def _random_transform(self, img):
+        composition = albu.Compose(
+            [
+                albu.HorizontalFlip(p=0.5),
+                # albu.CoarseDropout(max_holes=8,max_height=32,max_width=32,fill_value=0,p=0.5),
+            ]
+        )
+        return composition(image=img)["image"]
+
+    def __augment(self, img_batch):
+        for i in range(img_batch.shape[0]):
+            img_batch[i,] = self._random_transform(img_batch[i,])
+        return img_batch
