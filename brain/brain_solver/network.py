@@ -4,13 +4,24 @@ from torchvision.models import efficientnet_b0
 
 
 class Network(nn.Module):
-    def __init__(self, weight_file, use_kaggle_spectrograms, use_eeg_spectrograms):
+    def __init__(
+        self,
+        weight_file,
+        use_kaggle_spectrograms,
+        use_eeg_spectrograms,
+        validation=False,
+    ):
         super().__init__()
         self.use_kaggle_spectrograms = use_kaggle_spectrograms
         self.use_eeg_spectrograms = use_eeg_spectrograms
         self.base_model = efficientnet_b0()
         if weight_file:
-            self.base_model.load_state_dict(torch.load(weight_file))
+            if validation:
+                self.base_model.load_state_dict(
+                    torch.load(weight_file)["model_state_dict"]
+                )
+            else:
+                self.base_model.load_state_dict(torch.load(weight_file))
         # Update the classifier layer to match the number of target classes
         self.base_model.classifier[1] = nn.Linear(
             self.base_model.classifier[1].in_features, 6, dtype=torch.float32

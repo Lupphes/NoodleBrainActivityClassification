@@ -169,6 +169,7 @@ class BrainModel:
                     ckpt_file,
                     config.USE_KAGGLE_SPECTROGRAMS,
                     config.USE_EEG_SPECTROGRAMS,
+                    validation=True,
                 )
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency
