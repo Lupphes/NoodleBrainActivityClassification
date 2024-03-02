@@ -33,11 +33,8 @@ class Network(nn.Module):
             x = x1
 
         # Expand the input to have 3 channels
-        print(x.shape)
         x = torch.concat([x, x, x], dim=3)
-        print(x.shape)
         x = x.permute(0, 3, 1, 2)
-        print(x.shape)
 
         out = self.base_model(x)
         return out
