@@ -158,13 +158,11 @@ class BrainModel:
             print(f"### Validating Fold {i+1}")
 
             ckpt_file = (
-                f"EffNet_version{config.VER}_fold{i+1}.pth"
+                config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth"
                 if config.trained_model_path is None
                 else f"{config.trained_model_path}/EffNet_v{config.VER}_f{i}.ckpt"
             )
-            model = torch.load(
-                config.output_path + ckpt_file,
-            )
+            model = torch.load(ckpt_file)
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency
                 for val_batch in valid_loaders[i]:
