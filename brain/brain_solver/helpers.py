@@ -350,7 +350,7 @@ class Helpers:
                     eeg = train_data_preprocessed.eeg_id.values[eeg_id_index]
                     plt.title(f"EEG = {eeg}\nTarget = {tars}", size=12)
                     plt.ylabel("y", size=14)
-                    plt.xlabel("x", size=14)
+                    plt.xlabel("i", size=14)
             plt.show()
 
             if i == BATCHES - 1:
