@@ -166,7 +166,7 @@ class BrainModel:
                 model = torch.load(ckpt_file)
             else:
                 model = Network(
-                    torch.load(ckpt_file)["model_state_dict"],
+                    ckpt_file,
                     config.USE_KAGGLE_SPECTROGRAMS,
                     config.USE_EEG_SPECTROGRAMS,
                 )
