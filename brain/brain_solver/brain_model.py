@@ -12,6 +12,7 @@ import gc
 
 from .eeg_dataset import EEGDataset
 from .network import Network
+from .trainer import Trainer
 
 
 class BrainModel:
@@ -165,11 +166,11 @@ class BrainModel:
             if config.trained_model_path is None or config.FINE_TUNE:
                 model = torch.load(ckpt_file)
             else:
-                model = Network(
+                model = Trainer.load_from_checkpoint(
                     ckpt_file,
-                    config.USE_KAGGLE_SPECTROGRAMS,
-                    config.USE_EEG_SPECTROGRAMS,
-                    validation=True,
+                    weight_file=config.trained_weight_file,
+                    use_kaggle_spectrograms=config.USE_KAGGLE_SPECTROGRAMS,
+                    use_eeg_spectrograms=config.USE_EEG_SPECTROGRAMS,
                 )
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency

@@ -1,26 +1,24 @@
 import torch
 import torch.nn as nn
-from torchvision.models import efficientnet_b0
+import pytorch_lightning as pl
+from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
 
-class Network(nn.Module):
+class Trainer(pl.LightningModule):
+
     def __init__(
-        self,
-        weight_file,
-        use_kaggle_spectrograms,
-        use_eeg_spectrograms,
+        self, weight_file, use_kaggle_spectrograms=False, use_eeg_spectrograms=True
     ):
         super().__init__()
         self.use_kaggle_spectrograms = use_kaggle_spectrograms
         self.use_eeg_spectrograms = use_eeg_spectrograms
         self.base_model = efficientnet_b0()
-        if weight_file:
-            self.base_model.load_state_dict(torch.load(weight_file))
+        self.base_model.load_state_dict(torch.load(weight_file))
         # Update the classifier layer to match the number of target classes
         self.base_model.classifier[1] = nn.Linear(
-            self.base_model.classifier[1].in_features, 6, dtype=torch.float32
+            self.base_model.classifier[1].in_features, 6
         )
-        self.prob_out = nn.Softmax()
+        self.prob_out = nn.Softmax(dim=1)
 
     def forward(self, x):
         # Split the input into two groups
@@ -43,3 +41,18 @@ class Network(nn.Module):
 
         out = self.base_model(x)
         return out
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        out = self.forward(x)
+        out = torch.log_softmax(out, dim=1)
+        kl_loss = nn.KLDivLoss(reduction="batchmean")
+        loss = kl_loss(out, y)
+        return loss
+
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        return torch.softmax(self.forward(batch), dim=1)
+
+    def configure_optimizers(self, lr=1e-3):
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        return optimizer
