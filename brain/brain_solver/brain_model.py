@@ -108,7 +108,7 @@ class BrainModel:
             if config.trained_model_path is None or config.FINE_TUNE:
                 if config.FINE_TUNE:
                     # Freeze layers?
-                    # add more layers to model?
+                    # add more layers to model
                     for param in model.base_model.parameters():
                         param.requires_grad = False
 
