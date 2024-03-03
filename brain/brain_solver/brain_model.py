@@ -159,10 +159,10 @@ class BrainModel:
 
             ckpt_file = (
                 config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth"
-                if config.trained_model_path is None
+                if config.trained_model_path is None or config.FINE_TUNE
                 else f"{config.trained_model_path}EffNet_v{config.VER}_f{i}.ckpt"
             )
-            if config.trained_model_path is None:
+            if config.trained_model_path is None or config.FINE_TUNE:
                 model = torch.load(ckpt_file)
             else:
                 model = Network(
