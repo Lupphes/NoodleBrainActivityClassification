@@ -15,17 +15,21 @@ class Network(nn.Module):
         self.use_kaggle_spectrograms = use_kaggle_spectrograms
         self.use_eeg_spectrograms = use_eeg_spectrograms
         self.base_model = efficientnet_b0()
-        # Update the classifier layer to match the number of target classes
-        self.base_model.classifier[1] = nn.Linear(
-            self.base_model.classifier[1].in_features, 6, dtype=torch.float32
-        )
         if weight_file:
             if validation:
                 state = torch.load(weight_file)["state_dict"]
                 state = {k.replace("base_model.", ""): v for k, v in state.items()}
+                # Update the classifier layer to match the number of target classes
+                self.base_model.classifier[1] = nn.Linear(
+                    self.base_model.classifier[1].in_features, 6, dtype=torch.float32
+                )
                 self.base_model.load_state_dict(state)
             else:
                 self.base_model.load_state_dict(torch.load(weight_file))
+        # Update the classifier layer to match the number of target classes
+        self.base_model.classifier[1] = nn.Linear(
+            self.base_model.classifier[1].in_features, 6, dtype=torch.float32
+        )
         self.prob_out = nn.Softmax()
 
     def forward(self, x):
