@@ -107,18 +107,22 @@ class BrainModel:
             ).to(device)
 
             if config.trained_model_path is None or config.FINE_TUNE:
+                lr = 1e-3
                 if config.FINE_TUNE:
                     # Freeze layers?
+                    lr = 1e-2
                     # add more layers to model
                     for param in model.base_model.parameters():
                         param.requires_grad = False
 
-                    # for param in model.base_model._blocks[
-                    #     -4:
-                    # ].parameters():  # Unfreeze the last 4 blocks
-                    #     param.requires_grad = True
+                    for param in model.base_model.avgpool.parameters():
+                        param.requires_grad = True
+
+                    for param in model.base_model.classifier.parameters():
+                        param.requires_grad = True
+
                 criterion = nn.KLDivLoss(reduction="batchmean")
-                optimizer = torch.optim.Adam(model.parameters(), lr=1.2e-3)
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 BrainModel.train(
                     model,
                     max_epochs,
