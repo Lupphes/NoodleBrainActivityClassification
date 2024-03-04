@@ -32,16 +32,18 @@ class Wav2Vec2:
     TARGET_SAMPLING_RATE = 16000
 
     @staticmethod
-    def preprocess_eeg_data(data, min_length=16000):
+    def preprocess_eeg_data(
+        data, model_path="facebook/wav2vec2-base-960h", min_length=16000
+    ):
         """
         Pre-processes the data for use by wav2vec2, ensuring data meets minimum length requirements.
         """
         resampler = Resample(
             orig_freq=Wav2Vec2.SAMPLING_RATE,
             new_freq=Wav2Vec2.TARGET_SAMPLING_RATE,
-            dtype=torch.float64,
+            dtype=torch.float32,
         )
-        model = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+        model = Wav2Vec2Processor.from_pretrained(model_path)
 
         data_preprocessed = []
         for i in range(len(Wav2Vec2.CHANNELS)):
@@ -77,12 +79,12 @@ class Wav2Vec2:
         return data_preprocessed
 
     @staticmethod
-    def preprocess_spec_data(data):
+    def preprocess_spec_data(data, model_path="facebook/wav2vec2-base-960h"):
         """
         Pre-processes the data for use by wav2vec2.
         """
 
-        model = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
+        model = Wav2Vec2Processor.from_pretrained(model_path, local_files_only=True)
         data_normalized = model(
             data,
             sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE,
@@ -93,12 +95,12 @@ class Wav2Vec2:
         return [data_normalized]
 
     @staticmethod
-    def process_with_wav2vec2(data):
+    def process_with_wav2vec2(data, model_path="facebook/wav2vec2-base-960h"):
         """
         Applies wav2vec2 to the given data and returns the values in the last hidden layer.
         """
 
-        model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-base-960h")
+        model = Wav2Vec2ForCTC.from_pretrained(model_path)
 
         w2v_output = []
         for ch_data in data:
@@ -109,7 +111,9 @@ class Wav2Vec2:
         return w2v_output
 
     @staticmethod
-    def wav2vec2(parquet_file, proc_eegs=False):
+    def wav2vec2(
+        parquet_file, proc_eegs=False, model_path="facebook/wav2vec2-base-960h"
+    ):
         """
         Applies the Wav2Vec2 algorithm to the raw EEG data given as argument
         and writes the result to a folder data/w2v_eegs
@@ -121,8 +125,8 @@ class Wav2Vec2:
         """
 
         if proc_eegs:
-            data_preprocessed = Wav2Vec2.preprocess_eeg_data(parquet_file)
+            data_preprocessed = Wav2Vec2.preprocess_eeg_data(parquet_file, model_path)
         else:
-            data_preprocessed = Wav2Vec2.preprocess_spec_data(parquet_file)
-        w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed)
+            data_preprocessed = Wav2Vec2.preprocess_spec_data(parquet_file, model_path)
+        w2v_output = Wav2Vec2.process_with_wav2vec2(data_preprocessed, model_path)
         return w2v_output
