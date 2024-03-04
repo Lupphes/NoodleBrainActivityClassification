@@ -109,7 +109,7 @@ class BrainModel:
             if config.trained_model_path is None or config.FINE_TUNE:
                 lr = 1e-3
                 if config.FINE_TUNE:
-                    # Freeze layers?
+                    # Freeze layers? + adjust learning rate scheduler
                     lr = 1e-2
                     # add more layers to model
                     for param in model.base_model.parameters():
