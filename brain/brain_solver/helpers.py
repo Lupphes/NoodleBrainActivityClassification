@@ -159,7 +159,7 @@ class Helpers:
         - A dictionary with keys as the spectrogram names (integers) and values as numpy arrays of the spectrogram data.
         """
         if read_files:
-            files = os.listdir(path)[:500]
+            files = os.listdir(path)
             print(f"There are {len(files)} spectrogram parquets")
             spectrograms = {}
             for i, f in enumerate(files):

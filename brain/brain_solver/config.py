@@ -44,6 +44,7 @@ class Config:
         self.data_eeg_test = self.competition_data_path + "test_eegs/"
         self.data_w2v_eegs = self.output_path + "w2v_eegs_filter/"
         self.data_w2v_specs = self.output_path + "w2v_specs_filter/"
+        self.data_w2v_specs_eeg = self.output_path + "w2v_specs_filter_eeg/"
         self.trained_model_path = None
         self.trained_weight_file = None
         if USE_PRETRAINED_MODEL:

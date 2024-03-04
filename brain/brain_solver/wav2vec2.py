@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torchaudio.transforms import Resample
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
@@ -31,11 +32,10 @@ class Wav2Vec2:
     TARGET_SAMPLING_RATE = 16000
 
     @staticmethod
-    def preprocess_eeg_data(data):
+    def preprocess_eeg_data(data, min_length=16000):
         """
-        Pre-processes the data for use by wav2vec2.
+        Pre-processes the data for use by wav2vec2, ensuring data meets minimum length requirements.
         """
-
         resampler = Resample(
             orig_freq=Wav2Vec2.SAMPLING_RATE,
             new_freq=Wav2Vec2.TARGET_SAMPLING_RATE,
@@ -45,7 +45,27 @@ class Wav2Vec2:
 
         data_preprocessed = []
         for i in range(len(Wav2Vec2.CHANNELS)):
-            data_resampled = resampler(torch.tensor(data[i]).unsqueeze(0)).numpy()[0]
+            # Resample data
+            data_resampled = resampler(
+                torch.tensor(data[i], dtype=torch.float64).unsqueeze(0)
+            ).numpy()[0]
+
+            # Ensure data meets minimum length
+            if data_resampled.shape[1] < min_length:
+                # Calculate padding (total and for each side)
+                total_padding = min_length - data_resampled.shape[1]
+                padding_left = total_padding // 2
+                padding_right = total_padding - padding_left
+
+                # Pad data
+                data_resampled = np.pad(
+                    data_resampled,
+                    ((0, 0), (padding_left, padding_right)),
+                    "constant",
+                    constant_values=0,
+                )
+
+            # Normalize data
             data_normalized = model(
                 data_resampled,
                 sampling_rate=Wav2Vec2.TARGET_SAMPLING_RATE,
