@@ -41,7 +41,7 @@ class Wav2Vec2:
         resampler = Resample(
             orig_freq=Wav2Vec2.SAMPLING_RATE,
             new_freq=Wav2Vec2.TARGET_SAMPLING_RATE,
-            dtype=torch.float64,
+            dtype=torch.float32,
         )
         model = Wav2Vec2Processor.from_pretrained(model_path)
 
@@ -49,7 +49,7 @@ class Wav2Vec2:
         for i in range(len(Wav2Vec2.CHANNELS)):
             # Resample data
             data_resampled = resampler(
-                torch.tensor(data[i], dtype=torch.float64).unsqueeze(0)
+                torch.tensor(data[i], dtype=torch.float32).unsqueeze(0)
             ).numpy()[0]
 
             # Ensure data meets minimum length
