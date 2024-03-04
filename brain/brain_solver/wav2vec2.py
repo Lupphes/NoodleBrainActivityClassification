@@ -41,7 +41,7 @@ class Wav2Vec2:
         resampler = Resample(
             orig_freq=Wav2Vec2.SAMPLING_RATE,
             new_freq=Wav2Vec2.TARGET_SAMPLING_RATE,
-            dtype=torch.float32,
+            dtype=torch.float64,
         )
         model = Wav2Vec2Processor.from_pretrained(model_path)
 
