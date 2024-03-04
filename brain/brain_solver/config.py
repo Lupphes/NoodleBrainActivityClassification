@@ -3,7 +3,7 @@ class Config:
         self,
         full_path,
         output_path,
-        VER=1,
+        VER=5,
         num_classes=6,
         batch_size=88,
         epochs=20,
@@ -16,6 +16,7 @@ class Config:
         should_read_brain_spectograms=True,
         should_read_eeg_spectrogram_files=True,
         USE_PRETRAINED_MODEL=True,
+        FINE_TUNE=True,
     ):
         self.VER = VER
         self.num_classes = num_classes
@@ -29,6 +30,7 @@ class Config:
         self.USE_EEG_SPECTROGRAMS = USE_EEG_SPECTROGRAMS
         self.should_read_brain_spectograms = should_read_brain_spectograms
         self.should_read_eeg_spectrogram_files = should_read_eeg_spectrogram_files
+        self.FINE_TUNE = FINE_TUNE
 
         # Paths setup with default parameters
         self.full_path = full_path

@@ -4,7 +4,12 @@ from torchvision.models import efficientnet_b0
 
 
 class Network(nn.Module):
-    def __init__(self, weight_file, use_kaggle_spectrograms, use_eeg_spectrograms):
+    def __init__(
+        self,
+        weight_file,
+        use_kaggle_spectrograms,
+        use_eeg_spectrograms,
+    ):
         super().__init__()
         self.use_kaggle_spectrograms = use_kaggle_spectrograms
         self.use_eeg_spectrograms = use_eeg_spectrograms

@@ -11,8 +11,8 @@ import pytorch_lightning as pl
 import gc
 
 from .eeg_dataset import EEGDataset
-from .trainer import Trainer as tr
 from .network import Network
+from .trainer import Trainer
 
 
 class BrainModel:
@@ -105,9 +105,24 @@ class BrainModel:
                 config.USE_KAGGLE_SPECTROGRAMS,
                 config.USE_EEG_SPECTROGRAMS,
             ).to(device)
-            if config.trained_model_path is None:
+
+            if config.trained_model_path is None or config.FINE_TUNE:
+                lr = 1e-3
+                if config.FINE_TUNE:
+                    # Freeze layers? + adjust learning rate scheduler
+                    lr = 1e-2
+                    # add more layers to model
+                    for param in model.base_model.parameters():
+                        param.requires_grad = False
+
+                    for param in model.base_model.avgpool.parameters():
+                        param.requires_grad = True
+
+                    for param in model.base_model.classifier.parameters():
+                        param.requires_grad = True
+
                 criterion = nn.KLDivLoss(reduction="batchmean")
-                optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 BrainModel.train(
                     model,
                     max_epochs,
@@ -148,13 +163,19 @@ class BrainModel:
             print(f"### Validating Fold {i+1}")
 
             ckpt_file = (
-                f"EffNet_version{config.VER}_fold{i+1}.pth"
-                if config.trained_model_path is None
-                else f"{config.trained_model_path}/EffNet_v{config.VER}_f{i}.ckpt"
+                config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth"
+                if config.trained_model_path is None or config.FINE_TUNE
+                else f"{config.trained_model_path}EffNet_v{config.VER}_f{i}.ckpt"
             )
-            model = torch.load(
-                config.output_path + ckpt_file,
-            )
+            if config.trained_model_path is None or config.FINE_TUNE:
+                model = torch.load(ckpt_file)
+            else:
+                model = Trainer.load_from_checkpoint(
+                    ckpt_file,
+                    weight_file=config.trained_weight_file,
+                    use_kaggle_spectrograms=config.USE_KAGGLE_SPECTROGRAMS,
+                    use_eeg_spectrograms=config.USE_EEG_SPECTROGRAMS,
+                )
             model = model.to(device).eval()
             with torch.inference_mode():  # Use inference mode for efficiency
                 for val_batch in valid_loaders[i]:
@@ -184,10 +205,6 @@ class BrainModel:
         loss = criterion(out, y)
         acc = BrainModel.custom_accuracy(out, y)
         return loss, acc, len(y)
-
-    # @staticmethod
-    # def predict_step(self, batch, batch_idx, dataloader_idx=0):
-    #     return torch.softmax(self.forward(batch), dim=1)
 
     @staticmethod
     def custom_accuracy(predicted_probs, true_probs):
@@ -248,6 +265,8 @@ class BrainModel:
                 "validation accuracy",
             ],
         )
+        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+
         for epoch in range(num_epochs):
             print("Epoch: ", epoch + 1)
             total_count = 0
@@ -261,6 +280,8 @@ class BrainModel:
                 )
                 # Compute Gradients
                 loss.backward()
+                # Clip gradients to prevent explosion
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 # Update weights
                 optimizer.step()
                 # Reset Gradients
@@ -268,6 +289,9 @@ class BrainModel:
                 total_count += len_y
                 total_loss += len_y * loss.item()
                 total_accuracy += len_y * acc
+
+            # Update learning rate
+            lr_scheduler.step()
 
             # Validation Phase
             train_loss = total_loss / total_count
