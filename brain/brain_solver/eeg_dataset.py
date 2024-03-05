@@ -71,6 +71,10 @@ class EEGDataset(Dataset):
                     img = (img - m) / (s + ep)
                     img = np.nan_to_num(img, nan=0.0)
 
+                    # pad image if necessary
+                    if img.shape[1] < 256:
+                        img = np.pad(img, ((0, 0), (0, 256-img.shape[1])))
+
                     # CROP TO 256 TIME STEPS
                     X[j, 14:-14, :, k] = img[:, 22:-22] / 2.0
 
