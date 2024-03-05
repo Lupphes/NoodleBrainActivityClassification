@@ -29,6 +29,8 @@ class BrainModel:
         batch_size_valid=64,
         max_epochs=4,
         num_workers=3,
+        w2v_enabled=False, 
+        model_eegs=True
     ):
         """
         Performs cross-validation on EEG data using GroupKFold.
@@ -64,6 +66,8 @@ class BrainModel:
                 spectrograms,
                 data_eeg_spectograms,
                 TARGETS,
+                w2v_enabled=w2v_enabled,
+                model_eegs=model_eegs
             )
             train_loader = DataLoader(
                 train_ds,
