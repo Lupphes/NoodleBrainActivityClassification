@@ -81,6 +81,8 @@ class BrainModel:
                 data_eeg_spectograms,
                 TARGETS,
                 mode="valid",
+                w2v_enabled=w2v_enabled,
+                model_eegs=model_eegs
             )
             valid_loader = DataLoader(
                 valid_ds,
@@ -93,6 +95,8 @@ class BrainModel:
                 spectrograms,
                 data_eeg_spectograms,
                 TARGETS,
+                w2v_enabled=w2v_enabled,
+                model_eegs=model_eegs
             )
             valid_loader_training = DataLoader(
                 valid_ds_training,
