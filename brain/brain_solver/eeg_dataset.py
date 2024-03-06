@@ -2,7 +2,7 @@ import numpy as np
 from torch.utils.data import Dataset
 import albumentations as albu
 class EEGDataset(Dataset):
-    def __init__(self, data, specs, eeg_specs, targets, augment=False, mode="train", w2v_enabled=False, model_eegs=True):
+    def __init__(self, data, specs, eeg_specs, targets, augment=False, mode="train", w2v_enabled=False, model_eegs=True, raw_eegs=False):
         self.data = data
         self.specs = specs
         self.eeg_specs = eeg_specs
@@ -10,6 +10,7 @@ class EEGDataset(Dataset):
         self.augment = augment
         self.mode = mode
         self.w2v_enabled = w2v_enabled
+        self.raw_eegs = raw_eegs
         self.model_eegs = model_eegs
 
     def __len__(self):
@@ -28,6 +29,20 @@ class EEGDataset(Dataset):
             return X
 
     def _generate_data(self, indexes):
+
+        if self.raw_eegs:
+            X = np.zeros((len(indexes), 19, 4, 768, 8), dtype="float32")
+            y = np.zeros((len(indexes), 6), dtype="float32")
+            
+            for j, i in enumerate(indexes):
+                row = self.data.iloc[i]
+                if self.mode == "test":
+                    r = 0
+                else:
+                    r = int((row["min_offset"] + row["max_offset"]) // 4)
+
+                for k in range(4):
+                    X[j, :, :, k] = self.specs[row.spec_id]
 
         if self.w2v_enabled:
 

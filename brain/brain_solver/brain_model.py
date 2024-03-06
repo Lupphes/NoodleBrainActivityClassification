@@ -30,7 +30,8 @@ class BrainModel:
         max_epochs=4,
         num_workers=3,
         w2v_enabled=False, 
-        model_eegs=True
+        model_eegs=True,
+        raw_eegs=False,
     ):
         """
         Performs cross-validation on EEG data using GroupKFold.
@@ -67,7 +68,8 @@ class BrainModel:
                 data_eeg_spectograms,
                 TARGETS,
                 w2v_enabled=w2v_enabled,
-                model_eegs=model_eegs
+                model_eegs=model_eegs,
+                raw_eegs=raw_eegs
             )
             train_loader = DataLoader(
                 train_ds,
@@ -82,7 +84,8 @@ class BrainModel:
                 TARGETS,
                 mode="valid",
                 w2v_enabled=w2v_enabled,
-                model_eegs=model_eegs
+                model_eegs=model_eegs,
+                raw_eegs=raw_eegs
             )
             valid_loader = DataLoader(
                 valid_ds,
@@ -96,7 +99,8 @@ class BrainModel:
                 data_eeg_spectograms,
                 TARGETS,
                 w2v_enabled=w2v_enabled,
-                model_eegs=model_eegs
+                model_eegs=model_eegs,
+                raw_eegs=raw_eegs
             )
             valid_loader_training = DataLoader(
                 valid_ds_training,
