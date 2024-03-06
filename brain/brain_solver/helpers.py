@@ -337,11 +337,7 @@ class Helpers:
                     plt.subplot(ROWS, COLS, index + 1)
                     t = y[index]
 
-                    if plot_eeg:
-                        # only plot 1 layer for the raw EEG data
-                        img = torch.flip(x[index, :, 0, :, 0], (0,))
-                    else:
-                        img = torch.flip(x[index, :, :, 0], (0,))
+                    img = torch.flip(x[index, :, :, 0], (0,))
                     if plot_latent:
                         img = img.T
                         

@@ -31,7 +31,7 @@ class EEGDataset(Dataset):
     def _generate_data(self, indexes):
 
         if self.raw_eegs:
-            X = np.zeros((len(indexes), 19, 4, 768, 8), dtype="float32")
+            X = np.zeros((len(indexes), 19, 768, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
             
             for j, i in enumerate(indexes):
@@ -42,7 +42,7 @@ class EEGDataset(Dataset):
                     r = int((row["min_offset"] + row["max_offset"]) // 4)
 
                 for k in range(4):
-                    X[j, :, :, :, k] = self.specs[row.spec_id]
+                    X[j, :, :, k] = self.specs[row.spec_id][:,k,:]
 
         elif self.w2v_enabled:
 
