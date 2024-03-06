@@ -57,7 +57,7 @@ class EEGDataset(Dataset):
                     r = int((row["min_offset"] + row["max_offset"]) // 4)
 
                 for k in range(4):
-                    X[j, :, :, k] = self.specs[row.spec_id]
+                    X[j, :, :, :, k] = self.specs[row.spec_id]
 
         else:
             X = np.zeros((len(indexes), 128, 256, 8), dtype="float32")
