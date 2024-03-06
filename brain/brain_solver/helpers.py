@@ -313,7 +313,7 @@ class Helpers:
 
     @staticmethod
     def plot_spectrograms(
-        dataloader, train_data_preprocessed, ROWS=2, COLS=3, BATCHES=2, plot_latent=False
+        dataloader, train_data_preprocessed, ROWS=2, COLS=3, BATCHES=2, plot_latent=False, plot_eeg=False
     ):
         """
         Plots spectrograms from the dataloader batches along with their corresponding labels and EEG IDs.
@@ -337,7 +337,11 @@ class Helpers:
                     plt.subplot(ROWS, COLS, index + 1)
                     t = y[index]
 
-                    img = torch.flip(x[index, :, :, 0], (0,))
+                    if plot_eeg:
+                        # only plot 1 layer for the raw EEG data
+                        img = torch.flip(x[index, :, 0, :, 0], (0,))
+                    else:
+                        img = torch.flip(x[index, :, :, 0], (0,))
                     if plot_latent:
                         img = img.T
                         
