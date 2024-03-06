@@ -71,14 +71,14 @@ class EEGDataset(Dataset):
                     img = (img - m) / (s + ep)
                     img = np.nan_to_num(img, nan=0.0)
 
+                    # CROP TO 256 TIME STEPS
+                    img = img[:, 22:-22]
+                    
                     # pad image if necessary
-                    print(img.shape)
                     if img.shape[1] < 256:
                         img = np.pad(img, ((0, 0), (0, 256-img.shape[1])))
-                    print(img.shape)
 
-                    # CROP TO 256 TIME STEPS
-                    X[j, 14:-14, :, k] = img[:, 22:-22] / 2.0
+                    X[j, 14:-14, :, k] = img / 2.0
 
         # EEG SPECTROGRAMS
         if self.model_eegs:
