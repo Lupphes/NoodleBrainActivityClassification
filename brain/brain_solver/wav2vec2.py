@@ -52,20 +52,20 @@ class Wav2Vec2:
                 torch.tensor(data[i], dtype=torch.float64).unsqueeze(0)
             ).numpy()[0]
 
-            # Ensure data meets minimum length
-            if data_resampled.shape[1] < min_length:
-                # Calculate padding (total and for each side)
-                total_padding = min_length - data_resampled.shape[1]
-                padding_left = total_padding // 2
-                padding_right = total_padding - padding_left
+            # # Ensure data meets minimum length
+            # if data_resampled.shape[1] < min_length:
+            #     # Calculate padding (total and for each side)
+            #     total_padding = min_length - data_resampled.shape[1]
+            #     padding_left = total_padding // 2
+            #     padding_right = total_padding - padding_left
 
-                # Pad data
-                data_resampled = np.pad(
-                    data_resampled,
-                    ((0, 0), (padding_left, padding_right)),
-                    "constant",
-                    constant_values=0,
-                )
+            #     # Pad data
+            #     data_resampled = np.pad(
+            #         data_resampled,
+            #         ((0, 0), (padding_left, padding_right)),
+            #         "constant",
+            #         constant_values=0,
+            #     )
 
             # Normalize data
             data_normalized = model(

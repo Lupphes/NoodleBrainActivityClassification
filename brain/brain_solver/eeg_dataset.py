@@ -30,34 +30,38 @@ class EEGDataset(Dataset):
 
     def _generate_data(self, indexes):
 
-        if self.raw_eegs:
+        if self.raw_eegs and self.w2v_enabled:
             X = np.zeros((len(indexes), 19, 768, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
             
             for j, i in enumerate(indexes):
                 row = self.data.iloc[i]
-                if self.mode == "test":
-                    r = 0
-                else:
-                    r = int((row["min_offset"] + row["max_offset"]) // 4)
 
                 for k in range(4):
                     lay = self.specs[row.spec_id][:,k,:]
                     lay = np.nan_to_num(lay, nan=0.0)
                     X[j, :, :, k] = lay
 
-        elif self.w2v_enabled:
+        elif self.raw_eegs and not self.w2v_enabled:
+            X = np.zeros((len(indexes), 20, 13200, 8), dtype="float32")
+            y = np.zeros((len(indexes), 6), dtype="float32")
+            
+            for j, i in enumerate(indexes):
+                row = self.data.iloc[i]
+
+                for k in range(4):
+                    eeg = self.specs[row.spec_id]
+                    eeg = np.nan_to_num(eeg, nan=0.0)
+                    X[j, :, :, k] = eeg
+
+        elif not self.raw_eegs and self.w2v_enabled:
 
             X = np.zeros((len(indexes), 1, 768, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
             
             for j, i in enumerate(indexes):
                 row = self.data.iloc[i]
-                if self.mode == "test":
-                    r = 0
-                else:
-                    r = int((row["min_offset"] + row["max_offset"]) // 4)
-
+                
                 for k in range(4):
                     X[j, :, :, k] = self.specs[row.spec_id]
 
