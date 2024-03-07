@@ -65,3 +65,8 @@ class Config:
         self.path_to_eeg_spectrograms_npy = (
             self.base_path_to_brain_eeg_spectrograms + "eeg_specs.npy"
         )
+        self.efficientnetb_tf_keras = (
+            full_path + "efficientnetb-tf-keras/EfficientNetB2.h5"
+        )
+        self.futures_head_starters_models = full_path + "features-head-starter-models/"
+        self.brain_eegs_npy = full_path + "brain-eegs/eegs.npy"
