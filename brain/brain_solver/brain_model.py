@@ -123,6 +123,9 @@ class BrainModel:
 
                 criterion = nn.KLDivLoss(reduction="batchmean")
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                lr_1 = torch.optim.lr_scheduler.LambdaLR(
+                    optimizer, lr_lambda=BrainModel.lrfn
+                )
                 BrainModel.train(
                     model,
                     max_epochs,
@@ -131,6 +134,7 @@ class BrainModel:
                     train_loader,
                     valid_loader_training,
                     device,
+                    lr_1,
                 )
                 torch.save(
                     model,
@@ -250,9 +254,22 @@ class BrainModel:
             epoch_acc = torch.stack(batch_accs).mean()
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
+    def lrfn(epoch):
+        return [1e-3, 1e-3, 1e-4, 1e-4, 1e-5][epoch]
+
+    def lrfn2(epoch):
+        return [1e-5, 1e-5, 1e-6][epoch]
+
     @staticmethod
     def train(
-        model, num_epochs, criterion, optimizer, train_loader, val_loader, device
+        model,
+        num_epochs,
+        criterion,
+        optimizer,
+        train_loader,
+        val_loader,
+        device,
+        lr_scheduler,
     ):
         animator = d2l.Animator(
             xlabel="epoch",
@@ -265,7 +282,6 @@ class BrainModel:
                 "validation accuracy",
             ],
         )
-        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
         for epoch in range(num_epochs):
             print("Epoch: ", epoch + 1)
