@@ -52,7 +52,7 @@ class EEGDataset(Dataset):
                 for k in range(4):
                     eeg = self.specs[row.spec_id]
                     eeg = np.nan_to_num(eeg, nan=0.0)
-                    X[j, :, :, k] = eeg.T[:, 13200]
+                    X[j, :, :, k] = eeg.T[:, 13199]
 
         elif not self.raw_eegs and self.w2v_enabled:
 
