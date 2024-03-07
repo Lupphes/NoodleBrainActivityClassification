@@ -43,7 +43,7 @@ class EEGDataset(Dataset):
                     X[j, :, :, k] = lay
 
         elif self.raw_eegs and not self.w2v_enabled:
-            X = np.zeros((len(indexes), 20, 10000, 8), dtype="float32")
+            X = np.zeros((len(indexes), 20, 2000, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
             
             for j, i in enumerate(indexes):
