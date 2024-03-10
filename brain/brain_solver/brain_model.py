@@ -156,7 +156,9 @@ class BrainModel:
                     num_workers=num_workers,
                 )
                 print(
-                    f"### Second stage train size {len(data)}, valid size {len(valid_index)}"
+                    f"### Second stage train size {len(train_data_preprocessed.iloc[train_index][
+                        train_data_preprocessed.iloc[train_index]["kl"] < 5.5
+                    ])}, valid size {len(valid_index)}"
                 )
                 print("#" * 25)
                 lr = 1e-5
