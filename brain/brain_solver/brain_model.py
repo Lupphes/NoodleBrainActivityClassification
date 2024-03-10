@@ -97,20 +97,6 @@ class BrainModel:
                 batch_size=batch_size_valid,
                 num_workers=num_workers,
             )
-            data = train_data_preprocessed.iloc[train_index]
-            data = data[data["kl"] < 5.5]
-            train_ds2 = EEGDataset(
-                data,
-                spectrograms,
-                data_eeg_spectograms,
-                TARGETS,
-            )
-            train_loader2 = DataLoader(
-                train_ds2,
-                shuffle=True,
-                batch_size=batch_size_train,
-                num_workers=num_workers,
-            )
 
             print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
             print("#" * 25)
@@ -155,6 +141,20 @@ class BrainModel:
                 )
 
                 # Second training stage
+                data = train_data_preprocessed.iloc[train_index]
+                data = data[data["kl"] < 5.5]
+                train_ds2 = EEGDataset(
+                    data,
+                    spectrograms,
+                    data_eeg_spectograms,
+                    TARGETS,
+                )
+                train_loader2 = DataLoader(
+                    train_ds2,
+                    shuffle=True,
+                    batch_size=batch_size_train,
+                    num_workers=num_workers,
+                )
                 print(
                     f"### Second stage train size {len(data)}, valid size {len(valid_index)}"
                 )
