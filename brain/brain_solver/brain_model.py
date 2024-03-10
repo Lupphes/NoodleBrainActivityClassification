@@ -121,7 +121,7 @@ class BrainModel:
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
                 else:
-                    lr = 1e-3
+                    lr = 1
 
                 # First training stage
                 criterion = nn.KLDivLoss(reduction="batchmean")
@@ -159,7 +159,6 @@ class BrainModel:
                     f"### Second stage train size {len(data)}, valid size {len(valid_index)}"
                 )
                 print("#" * 25)
-                lr = 1e-5
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 lr_2 = torch.optim.lr_scheduler.LambdaLR(
                     optimizer, lr_lambda=BrainModel.lrfn2
@@ -295,10 +294,10 @@ class BrainModel:
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
     def lrfn(epoch):
-        return [1e-3, 1e-3, 1e-4, 1e-4, 1e-5][epoch]
+        return [1e-3, 1e-3, 1e-4, 1e-4, 1e-5][epoch - 1]
 
     def lrfn2(epoch):
-        return [1e-5, 1e-5, 1e-6][epoch]
+        return [1e-5, 1e-5, 1e-6][epoch - 1]
 
     @staticmethod
     def train(
@@ -328,6 +327,10 @@ class BrainModel:
             total_count = 0
             total_loss = 0
             total_accuracy = 0
+
+            # Update learning rate
+            lr_scheduler.step()
+
             # Training Phase
             for batch in tqdm(train_loader):
                 # Calculate Loss
@@ -345,9 +348,6 @@ class BrainModel:
                 total_count += len_y
                 total_loss += len_y * loss.item()
                 total_accuracy += len_y * acc
-
-            # Update learning rate
-            lr_scheduler.step()
 
             # Validation Phase
             train_loss = total_loss / total_count
