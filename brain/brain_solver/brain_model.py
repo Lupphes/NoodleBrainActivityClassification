@@ -109,9 +109,6 @@ class BrainModel:
 
             if config.trained_model_path is None or config.FINE_TUNE:
                 if config.FINE_TUNE:
-                    # Freeze layers?
-                    lr = 1e-2
-                    # add more layers to model
                     for param in model.base_model.parameters():
                         param.requires_grad = False
 
@@ -120,8 +117,7 @@ class BrainModel:
 
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
-                else:
-                    lr = 1
+                lr = 1
 
                 # First training stage
                 criterion = nn.KLDivLoss(reduction="batchmean")
@@ -293,9 +289,11 @@ class BrainModel:
             epoch_acc = torch.stack(batch_accs).mean()
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
+    @staticmethod
     def lrfn(epoch):
         return [1e-3, 1e-3, 1e-4, 1e-4, 1e-5][epoch - 1]
 
+    @staticmethod
     def lrfn2(epoch):
         return [1e-5, 1e-5, 1e-6][epoch - 1]
 
