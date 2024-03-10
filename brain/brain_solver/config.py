@@ -1,3 +1,6 @@
+from numpy import full
+
+
 class Config:
     def __init__(
         self,
@@ -8,6 +11,7 @@ class Config:
         batch_size=88,
         epochs=20,
         seed=2024,
+        num_folds=5,
         weight_decay=1e-2,
         learning_rate=8e-3,
         use_wavelet=None,
@@ -23,6 +27,7 @@ class Config:
         self.batch_size = batch_size
         self.epochs = epochs
         self.seed = seed
+        self.num_folds = num_folds
         self.weight_decay = weight_decay
         self.learning_rate = learning_rate
         self.use_wavelet = use_wavelet
@@ -70,3 +75,16 @@ class Config:
         )
         self.futures_head_starters_models = full_path + "features-head-starter-models/"
         self.brain_eegs_npy = full_path + "brain-eegs/eegs.npy"
+        self.brain_eegs = full_path + "brain-eegs/"
+        self.catboost_path = full_path + "catboost-starter-lb-0-60/"
+        self.brain_efficientnet_models = (
+            full_path + "brain-efficientnet-models-v3-v4-v5/"
+        )
+        self.tf_efficientnet_imagenet = (
+            full_path
+            + "tf-efficientnet-imagenet-weights/efficientnet-b0_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5"
+        )
+        self.resnet34d = full_path + "hms-baseline-resnet34d-512-512-training-5-folds/"
+        self.train_resnet34d = full_path + "resnet34d/hms-train-resnet34d/"
+        self.efficientnetb0 = full_path + "efficientnetb0/hms-train-efficientnetb0/"
+        self.efficientnetb1 = full_path + "efficientnetb1/hms-train-efficientnetb1/"
