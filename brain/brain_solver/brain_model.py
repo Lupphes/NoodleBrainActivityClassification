@@ -141,10 +141,10 @@ class BrainModel:
                 )
 
                 # Second training stage
-                data = train_data_preprocessed.iloc[train_index]
-                data = data[data["kl"] < 5.5]
                 train_ds2 = EEGDataset(
-                    data,
+                    train_data_preprocessed.iloc[train_index][
+                        train_data_preprocessed.iloc[train_index]["kl"] < 5.5
+                    ],
                     spectrograms,
                     data_eeg_spectograms,
                     TARGETS,
