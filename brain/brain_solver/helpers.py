@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import torch
 import pywt
 import librosa
-import tensorflow as tf
 import torch
 
 
@@ -95,8 +94,14 @@ class Helpers:
 
         # Add KL divergence score
         labels = train[targets].values + 1e-5
-        train["kl"] = tf.keras.losses.KLDivergence(reduction="none")(
-            np.array([[1 / 6] * 6] * len(train)), labels
+        train["kl"] = (
+            torch.nn.functional.kl_div(
+                torch.log(torch.tensor(labels)),
+                torch.tensor([1 / 6] * 6),
+                reduction="none",
+            )
+            .sum(dim=1)
+            .numpy()
         )
 
         # Reset index
