@@ -27,7 +27,8 @@ class BrainModel:
         n_splits=5,
         batch_size_train=32,
         batch_size_valid=64,
-        max_epochs=4,
+        max_epochs_first_stage=5,
+        max_epochs_second_stage=3,
         num_workers=3,
     ):
         """
@@ -96,6 +97,20 @@ class BrainModel:
                 batch_size=batch_size_valid,
                 num_workers=num_workers,
             )
+            data = train_data_preprocessed.iloc[train_index]
+            data = data[data["kl"] < 5.5]
+            train_ds2 = EEGDataset(
+                data,
+                spectrograms,
+                data_eeg_spectograms,
+                TARGETS,
+            )
+            train_loader2 = DataLoader(
+                train_ds2,
+                shuffle=True,
+                batch_size=batch_size_train,
+                num_workers=num_workers,
+            )
 
             print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
             print("#" * 25)
@@ -107,9 +122,8 @@ class BrainModel:
             ).to(device)
 
             if config.trained_model_path is None or config.FINE_TUNE:
-                lr = 1e-3
                 if config.FINE_TUNE:
-                    # Freeze layers? + adjust learning rate scheduler
+                    # Freeze layers?
                     lr = 1e-2
                     # add more layers to model
                     for param in model.base_model.parameters():
@@ -120,7 +134,10 @@ class BrainModel:
 
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
+                else:
+                    lr = 1e-3
 
+                # First training stage
                 criterion = nn.KLDivLoss(reduction="batchmean")
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 lr_1 = torch.optim.lr_scheduler.LambdaLR(
@@ -128,7 +145,7 @@ class BrainModel:
                 )
                 BrainModel.train(
                     model,
-                    max_epochs,
+                    max_epochs_first_stage,
                     criterion,
                     optimizer,
                     train_loader,
@@ -136,6 +153,29 @@ class BrainModel:
                     device,
                     lr_1,
                 )
+
+                # Second training stage
+                print(
+                    f"### Second stage train size {len(data)}, valid size {len(valid_index)}"
+                )
+                print("#" * 25)
+                lr = 1e-5
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                lr_2 = torch.optim.lr_scheduler.LambdaLR(
+                    optimizer, lr_lambda=BrainModel.lrfn2
+                )
+                BrainModel.train(
+                    model,
+                    max_epochs_second_stage,
+                    criterion,
+                    optimizer,
+                    train_loader2,
+                    valid_loader_training,
+                    device,
+                    lr_2,
+                )
+
+                # Save model
                 torch.save(
                     model,
                     config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
