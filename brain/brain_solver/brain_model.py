@@ -111,12 +111,24 @@ class BrainModel:
                 if config.FINE_TUNE:
                     for param in model.base_model.parameters():
                         param.requires_grad = False
+                    criterion = nn.KLDivLoss(reduction="batchmean")
+                    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+                    lr_1 = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+                    BrainModel.train(
+                        model,
+                        25,
+                        criterion,
+                        optimizer,
+                        train_loader,
+                        valid_loader_training,
+                        device,
+                        lr_1,
+                    )
+                    # for param in model.base_model.avgpool.parameters():
+                    #     param.requires_grad = True
 
-                    for param in model.base_model.avgpool.parameters():
-                        param.requires_grad = True
-
-                    for param in model.base_model.classifier.parameters():
-                        param.requires_grad = True
+                    # for param in model.base_model.classifier.parameters():
+                    #     param.requires_grad = True
                 lr = 1
 
                 # First training stage
