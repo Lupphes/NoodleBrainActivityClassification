@@ -134,7 +134,7 @@ class BrainModel:
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
 
-                    set_trainable_layers(model.base_model.features)
+                    BrainModel.set_trainable_layers(model.base_model.features)
 
                 lr = 1
                 print(f"Total parameters: {sum(p.numel() for p in model.parameters())}")
