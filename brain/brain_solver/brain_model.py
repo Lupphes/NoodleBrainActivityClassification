@@ -302,11 +302,11 @@ class BrainModel:
             epoch_acc = torch.stack(batch_accs).mean()
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
-    @staticmethod
+    @staticmethod # First train stage lr schedule
     def lrfn(epoch):
         return [1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4, 1e-5, 1e-5][epoch - 1]
 
-    @staticmethod
+    @staticmethod # Second train stage lr schedule
     def lrfn2(epoch):
         return [1e-4, 1e-5, 1e-5, 1e-5, 1e-6][epoch - 1]
 
