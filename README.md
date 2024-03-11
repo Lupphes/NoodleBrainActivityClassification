@@ -1,6 +1,6 @@
 # Noodle Nappers -- MLiP Project
 
-This is a Project Repository of Machine Learning in Practise. It contains two projects.
+This is a Project Repository of Machine Learning in Practice. It contains two projects.
 
 1. https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/468010
 2.

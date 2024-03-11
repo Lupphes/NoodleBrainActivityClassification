@@ -119,18 +119,29 @@ class BrainModel:
                         param.requires_grad = True
 
                     processed_layers = 0
-                    for name, layer in reversed(
-                        list(model.base_model.features.named_modules())
-                    ):
 
-                        if not isinstance(layer, nn.BatchNorm2d):
-                            for param in layer.parameters():
-                                param.requires_grad = True
-                            processed_layers += 1
+                    def set_trainable_layers(model):
+                        for module in reversed(list(model.children())):
+                            global processed_layers
+                            if (
+                                len(list(module.children())) > 0
+                            ):  # If the module has children
+                                set_trainable_layers(module)
+                            else:
+                                if not isinstance(module, torch.nn.BatchNorm2d):
+                                    for param in module.parameters():
+                                        param.requires_grad = True
+                                processed_layers += 1
+                            if processed_layers >= 20:
+                                break
 
-                        if processed_layers >= 15:
-                            break
+                    set_trainable_layers(model.base_model.features)
                 lr = 1
+                print(f"Total parameters: {sum(p.numel() for p in model.parameters())}")
+                print(
+                    f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}"
+                )
+                print("#" * 25)
 
                 # First training stage
                 criterion = nn.KLDivLoss(reduction="batchmean")
@@ -302,11 +313,11 @@ class BrainModel:
             epoch_acc = torch.stack(batch_accs).mean()
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
-    @staticmethod # First train stage lr schedule
+    @staticmethod  # First train stage lr schedule
     def lrfn(epoch):
         return [1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4, 1e-5, 1e-5][epoch - 1]
 
-    @staticmethod # Second train stage lr schedule
+    @staticmethod  # Second train stage lr schedule
     def lrfn2(epoch):
         return [1e-4, 1e-5, 1e-5, 1e-5, 1e-6][epoch - 1]
 
