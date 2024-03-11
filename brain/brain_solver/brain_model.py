@@ -23,7 +23,7 @@ class BrainModel:
         for module in reversed(list(model.children())):
             global processed_layers
             if len(list(module.children())) > 0:  # If the module has children
-                set_trainable_layers(module)
+                BrainModel.set_trainable_layers(module)
             else:
                 if not isinstance(module, torch.nn.BatchNorm2d):
                     for param in module.parameters():
