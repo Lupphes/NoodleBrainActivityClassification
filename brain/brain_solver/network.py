@@ -20,12 +20,6 @@ class Network(nn.Module):
         self.base_model.classifier[1] = nn.Linear(
             self.base_model.classifier[1].in_features, 6, dtype=torch.float32
         )
-        self.global_avg_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.batch_norm = nn.BatchNorm1d(
-            1280
-        )  # Assuming 1280 is the output features from the base model
-        self.dropout = nn.Dropout(0.2)
-        self.linear = nn.Linear(1280, 6, dtype=torch.float32)
         self.prob_out = nn.Softmax()
 
     def forward(self, x):
@@ -47,12 +41,5 @@ class Network(nn.Module):
         x = torch.concat([x, x, x], dim=3)
         x = x.permute(0, 3, 1, 2)
 
-        x = self.base_model.features(x)
-        x = self.global_avg_pool(x)
-        x = x.view(x.size(0), -1)
-        x = self.batch_norm(x)
-        x = self.dropout(x)
-        x = self.linear(x)
-        out = self.prob_out(x)
-        # out = self.base_model(x)
+        out = self.base_model(x)
         return out

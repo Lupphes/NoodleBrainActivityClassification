@@ -111,24 +111,25 @@ class BrainModel:
                 if config.FINE_TUNE:
                     for param in model.base_model.parameters():
                         param.requires_grad = False
-                    criterion = nn.KLDivLoss(reduction="batchmean")
-                    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
-                    lr_1 = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
-                    BrainModel.train(
-                        model,
-                        25,
-                        criterion,
-                        optimizer,
-                        train_loader,
-                        valid_loader_training,
-                        device,
-                        lr_1,
-                    )
-                    # for param in model.base_model.avgpool.parameters():
-                    #     param.requires_grad = True
 
-                    # for param in model.base_model.classifier.parameters():
-                    #     param.requires_grad = True
+                    for param in model.base_model.avgpool.parameters():
+                        param.requires_grad = True
+
+                    for param in model.base_model.classifier.parameters():
+                        param.requires_grad = True
+
+                    processed_layers = 0
+                    for name, layer in reversed(
+                        list(model.base_model.features.named_modules())
+                    ):
+
+                        if not isinstance(layer, nn.BatchNorm2d):
+                            for param in layer.parameters():
+                                param.requires_grad = True
+                            processed_layers += 1
+
+                        if processed_layers >= 15:
+                            break
                 lr = 1
 
                 # First training stage
@@ -303,11 +304,11 @@ class BrainModel:
 
     @staticmethod
     def lrfn(epoch):
-        return [1e-3, 1e-3, 1e-4, 1e-4, 1e-5][epoch - 1]
+        return [1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4, 1e-5, 1e-5][epoch - 1]
 
     @staticmethod
     def lrfn2(epoch):
-        return [1e-5, 1e-5, 1e-6][epoch - 1]
+        return [1e-4, 1e-5, 1e-5, 1e-5, 1e-6][epoch - 1]
 
     @staticmethod
     def train(
