@@ -16,6 +16,22 @@ from .trainer import Trainer
 
 
 class BrainModel:
+    processed_layers = 0
+
+    @staticmethod
+    def set_trainable_layers(model):
+        for module in reversed(list(model.children())):
+            global processed_layers
+            if len(list(module.children())) > 0:  # If the module has children
+                set_trainable_layers(module)
+            else:
+                if not isinstance(module, torch.nn.BatchNorm2d):
+                    for param in module.parameters():
+                        param.requires_grad = True
+                processed_layers += 1
+            if processed_layers >= 20:
+                break
+
     @staticmethod
     def cross_validate_eeg(
         config,
@@ -118,24 +134,8 @@ class BrainModel:
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
 
-                    processed_layers = 0
-
-                    def set_trainable_layers(model):
-                        for module in reversed(list(model.children())):
-                            global processed_layers
-                            if (
-                                len(list(module.children())) > 0
-                            ):  # If the module has children
-                                set_trainable_layers(module)
-                            else:
-                                if not isinstance(module, torch.nn.BatchNorm2d):
-                                    for param in module.parameters():
-                                        param.requires_grad = True
-                                processed_layers += 1
-                            if processed_layers >= 20:
-                                break
-
                     set_trainable_layers(model.base_model.features)
+
                 lr = 1
                 print(f"Total parameters: {sum(p.numel() for p in model.parameters())}")
                 print(
