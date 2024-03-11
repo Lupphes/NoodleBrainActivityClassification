@@ -21,15 +21,14 @@ class BrainModel:
     @staticmethod
     def set_trainable_layers(model):
         for module in reversed(list(model.children())):
-            global processed_layers
             if len(list(module.children())) > 0:  # If the module has children
                 BrainModel.set_trainable_layers(module)
             else:
                 if not isinstance(module, torch.nn.BatchNorm2d):
                     for param in module.parameters():
                         param.requires_grad = True
-                processed_layers += 1
-            if processed_layers >= 20:
+                BrainModel.processed_layers += 1
+            if BrainModel.processed_layers >= 20:
                 break
 
     @staticmethod
