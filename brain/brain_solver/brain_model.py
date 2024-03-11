@@ -132,7 +132,7 @@ class BrainModel:
 
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
-
+                    BrainModel.processed_layers = 0
                     BrainModel.set_trainable_layers(model.base_model.features)
 
                 lr = 1
