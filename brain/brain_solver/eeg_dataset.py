@@ -1,8 +1,21 @@
 import numpy as np
 from torch.utils.data import Dataset
 import albumentations as albu
+
+
 class EEGDataset(Dataset):
-    def __init__(self, data, specs, eeg_specs, targets, augment=False, mode="train", w2v_enabled=False, model_eegs=True, raw_eegs=False):
+    def __init__(
+        self,
+        data,
+        specs,
+        eeg_specs,
+        targets,
+        augment=False,
+        mode="train",
+        w2v_enabled=False,
+        model_eegs=True,
+        raw_eegs=False,
+    ):
         self.data = data
         self.specs = specs
         self.eeg_specs = eeg_specs
@@ -33,19 +46,19 @@ class EEGDataset(Dataset):
         if self.raw_eegs and self.w2v_enabled:
             X = np.zeros((len(indexes), 19, 768, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
-            
+
             for j, i in enumerate(indexes):
                 row = self.data.iloc[i]
 
                 for k in range(4):
-                    lay = self.specs[row.spec_id][:,k,:]
+                    lay = self.specs[row.spec_id][:, k, :]
                     lay = np.nan_to_num(lay, nan=0.0)
                     X[j, :, :, k] = lay
 
         elif self.raw_eegs and not self.w2v_enabled:
             X = np.zeros((len(indexes), 20, 2000, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
-            
+
             for j, i in enumerate(indexes):
                 row = self.data.iloc[i]
 
@@ -58,10 +71,10 @@ class EEGDataset(Dataset):
 
             X = np.zeros((len(indexes), 1, 768, 8), dtype="float32")
             y = np.zeros((len(indexes), 6), dtype="float32")
-            
+
             for j, i in enumerate(indexes):
                 row = self.data.iloc[i]
-                
+
                 for k in range(4):
                     X[j, :, :, k] = self.specs[row.spec_id]
 
@@ -79,7 +92,9 @@ class EEGDataset(Dataset):
 
                 for k in range(4):
                     # EXTRACT 300 ROWS OF SPECTROGRAM
-                    img = self.specs[row.spec_id][r : r + 300, k * 100 : (k + 1) * 100].T
+                    img = self.specs[row.spec_id][
+                        r : r + 300, k * 100 : (k + 1) * 100
+                    ].T
 
                     # LOG TRANSFORM SPECTROGRAM
                     img = np.clip(img, np.exp(-4), np.exp(8))
@@ -94,10 +109,10 @@ class EEGDataset(Dataset):
 
                     # CROP TO 256 TIME STEPS
                     img = img[:, 22:-22]
-                    
+
                     # pad image if necessary
                     if img.shape[1] < 256:
-                        img = np.pad(img, ((0, 0), (0, 256-img.shape[1])))
+                        img = np.pad(img, ((0, 0), (0, 256 - img.shape[1])))
 
                     X[j, 14:-14, :, k] = img / 2.0
 

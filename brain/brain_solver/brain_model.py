@@ -29,7 +29,7 @@ class BrainModel:
         batch_size_valid=64,
         max_epochs=4,
         num_workers=3,
-        w2v_enabled=False, 
+        w2v_enabled=False,
         model_eegs=True,
         raw_eegs=False,
     ):
@@ -69,7 +69,7 @@ class BrainModel:
                 TARGETS,
                 w2v_enabled=w2v_enabled,
                 model_eegs=model_eegs,
-                raw_eegs=raw_eegs
+                raw_eegs=raw_eegs,
             )
             train_loader = DataLoader(
                 train_ds,
@@ -85,7 +85,7 @@ class BrainModel:
                 mode="valid",
                 w2v_enabled=w2v_enabled,
                 model_eegs=model_eegs,
-                raw_eegs=raw_eegs
+                raw_eegs=raw_eegs,
             )
             valid_loader = DataLoader(
                 valid_ds,
@@ -100,7 +100,7 @@ class BrainModel:
                 TARGETS,
                 w2v_enabled=w2v_enabled,
                 model_eegs=model_eegs,
-                raw_eegs=raw_eegs
+                raw_eegs=raw_eegs,
             )
             valid_loader_training = DataLoader(
                 valid_ds_training,

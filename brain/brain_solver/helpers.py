@@ -70,8 +70,18 @@ class Helpers:
 
         # Aggregate first spectrogram_id and min spectrogram_label_offset_seconds
         train = df.groupby("eeg_id")[
-            ["spectrogram_id", "spectrogram_label_offset_seconds", "eeg_label_offset_seconds"]
-        ].agg({"spectrogram_id": "first", "spectrogram_label_offset_seconds": "min", "eeg_label_offset_seconds": "min"})
+            [
+                "spectrogram_id",
+                "spectrogram_label_offset_seconds",
+                "eeg_label_offset_seconds",
+            ]
+        ].agg(
+            {
+                "spectrogram_id": "first",
+                "spectrogram_label_offset_seconds": "min",
+                "eeg_label_offset_seconds": "min",
+            }
+        )
         train.columns = ["spec_id", "min_offset", "eeg_min_offset"]
 
         # Aggregate max spectrogram_label_offset_seconds
@@ -313,7 +323,13 @@ class Helpers:
 
     @staticmethod
     def plot_spectrograms(
-        dataloader, train_data_preprocessed, ROWS=2, COLS=3, BATCHES=2, plot_latent=False, plot_eeg=False
+        dataloader,
+        train_data_preprocessed,
+        ROWS=2,
+        COLS=3,
+        BATCHES=2,
+        plot_latent=False,
+        plot_eeg=False,
     ):
         """
         Plots spectrograms from the dataloader batches along with their corresponding labels and EEG IDs.
@@ -340,7 +356,7 @@ class Helpers:
                     img = torch.flip(x[index, :, :, 0], (0,))
                     if plot_latent:
                         img = img.T
-                        
+
                     mn = img.flatten().min()
                     mx = img.flatten().max()
                     img = (img - mn) / (mx - mn)
