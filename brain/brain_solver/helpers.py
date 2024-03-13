@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import torch
 import pywt
 import librosa
-
 import torch
 
 
@@ -102,6 +101,18 @@ class Helpers:
 
         # Aggregate first expert_consensus
         train["target"] = df.groupby("eeg_id")[consensus_col].first()
+
+        # Add KL divergence score
+        labels = train[targets].values + 1e-5
+        train["kl"] = (
+            torch.nn.functional.kl_div(
+                torch.log(torch.tensor(labels)),
+                torch.tensor([1 / 6] * 6),
+                reduction="none",
+            )
+            .sum(dim=1)
+            .numpy()
+        )
 
         # Reset index
         train = train.reset_index()

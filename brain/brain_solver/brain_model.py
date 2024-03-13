@@ -16,6 +16,21 @@ from .trainer import Trainer
 
 
 class BrainModel:
+    processed_layers = 0
+
+    @staticmethod
+    def set_trainable_layers(model):
+        for module in reversed(list(model.children())):
+            if len(list(module.children())) > 0:  # If the module has children
+                BrainModel.set_trainable_layers(module)
+            else:
+                if not isinstance(module, torch.nn.BatchNorm2d):
+                    for param in module.parameters():
+                        param.requires_grad = True
+                BrainModel.processed_layers += 1
+            if BrainModel.processed_layers >= 20:
+                break
+
     @staticmethod
     def cross_validate_eeg(
         config,
@@ -27,7 +42,8 @@ class BrainModel:
         n_splits=5,
         batch_size_train=32,
         batch_size_valid=64,
-        max_epochs=4,
+        max_epochs_first_stage=5,
+        max_epochs_second_stage=3,
         num_workers=3,
         w2v_enabled=False,
         model_eegs=True,
@@ -119,11 +135,7 @@ class BrainModel:
             ).to(device)
 
             if config.trained_model_path is None or config.FINE_TUNE:
-                lr = 1e-3
                 if config.FINE_TUNE:
-                    # Freeze layers? + adjust learning rate scheduler
-                    lr = 1e-2
-                    # add more layers to model
                     for param in model.base_model.parameters():
                         param.requires_grad = False
 
@@ -132,18 +144,68 @@ class BrainModel:
 
                     for param in model.base_model.classifier.parameters():
                         param.requires_grad = True
+                    BrainModel.processed_layers = 0
+                    BrainModel.set_trainable_layers(model.base_model.features)
 
+                lr = 1
+                print(f"Total parameters: {sum(p.numel() for p in model.parameters())}")
+                print(
+                    f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}"
+                )
+                print("#" * 25)
+
+                # First training stage
                 criterion = nn.KLDivLoss(reduction="batchmean")
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                lr_1 = torch.optim.lr_scheduler.LambdaLR(
+                    optimizer, lr_lambda=BrainModel.lrfn
+                )
                 BrainModel.train(
                     model,
-                    max_epochs,
+                    max_epochs_first_stage,
                     criterion,
                     optimizer,
                     train_loader,
                     valid_loader_training,
                     device,
+                    lr_1,
                 )
+
+                # Second training stage
+                data = train_data_preprocessed.iloc[train_index]
+                data = data[data["kl"] < 5.5]
+                train_ds2 = EEGDataset(
+                    data,
+                    spectrograms,
+                    data_eeg_spectograms,
+                    TARGETS,
+                )
+                train_loader2 = DataLoader(
+                    train_ds2,
+                    shuffle=True,
+                    batch_size=batch_size_train,
+                    num_workers=num_workers,
+                )
+                print(
+                    f"### Second stage train size {len(data)}, valid size {len(valid_index)}"
+                )
+                print("#" * 25)
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                lr_2 = torch.optim.lr_scheduler.LambdaLR(
+                    optimizer, lr_lambda=BrainModel.lrfn2
+                )
+                BrainModel.train(
+                    model,
+                    max_epochs_second_stage,
+                    criterion,
+                    optimizer,
+                    train_loader2,
+                    valid_loader_training,
+                    device,
+                    lr_2,
+                )
+
+                # Save model
                 torch.save(
                     model,
                     config.output_path + f"EffNet_version{config.VER}_fold{i+1}.pth",
@@ -262,9 +324,24 @@ class BrainModel:
             epoch_acc = torch.stack(batch_accs).mean()
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
+    @staticmethod  # First train stage lr schedule
+    def lrfn(epoch):
+        return [1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4, 1e-5, 1e-5][epoch - 1]
+
+    @staticmethod  # Second train stage lr schedule
+    def lrfn2(epoch):
+        return [1e-4, 1e-5, 1e-5, 1e-5, 1e-6][epoch - 1]
+
     @staticmethod
     def train(
-        model, num_epochs, criterion, optimizer, train_loader, val_loader, device
+        model,
+        num_epochs,
+        criterion,
+        optimizer,
+        train_loader,
+        val_loader,
+        device,
+        lr_scheduler,
     ):
         animator = d2l.Animator(
             xlabel="epoch",
@@ -277,13 +354,16 @@ class BrainModel:
                 "validation accuracy",
             ],
         )
-        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
         for epoch in range(num_epochs):
             print("Epoch: ", epoch + 1)
             total_count = 0
             total_loss = 0
             total_accuracy = 0
+
+            # Update learning rate
+            lr_scheduler.step()
+
             # Training Phase
             for batch in tqdm(train_loader):
                 # Calculate Loss
@@ -301,9 +381,6 @@ class BrainModel:
                 total_count += len_y
                 total_loss += len_y * loss.item()
                 total_accuracy += len_y * acc
-
-            # Update learning rate
-            lr_scheduler.step()
 
             # Validation Phase
             train_loss = total_loss / total_count
