@@ -163,6 +163,9 @@ cython_debug/
 # Manual stuff
 venv/
 env/
+lightning_logs/
 
-efficientnetb0-pytorch-starter-lb-0-40.ipynb
-requirements2.txt
+data/*
+!data/kaggle-kl-div/
+
+submission.csv

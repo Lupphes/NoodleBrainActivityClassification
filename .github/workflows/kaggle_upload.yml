@@ -48,4 +48,3 @@ jobs:
       - name: Upload Package to Kaggle
         run: |
           kaggle datasets version -p dist -m "Updated via GitHub Actions: ${{ steps.get_commit_message.outputs.message }}"
-        working-directory: brain

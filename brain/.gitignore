@@ -1,8 +1,0 @@
-venv/
-env/
-lightning_logs/
-
-data/*
-!data/kaggle-kl-div/
-
-submission.csv

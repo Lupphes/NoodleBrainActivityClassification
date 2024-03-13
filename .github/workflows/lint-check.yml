@@ -22,7 +22,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Check PEP 8 compliance in brain
-        working-directory: brain
         run: |
           pip install black
           black --check --config pyproject.toml . *.ipynb
