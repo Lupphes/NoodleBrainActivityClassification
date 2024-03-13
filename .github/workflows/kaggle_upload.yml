@@ -41,7 +41,11 @@ jobs:
           echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
+      - name: Capture Last Commit Message
+        id: get_commit_message
+        run: echo "::set-output name=message::$(git log -1 --pretty=%B)"
+
       - name: Upload Package to Kaggle
         run: |
-          kaggle datasets version -p dist -m "Updated via GitHub Actions"
+          kaggle datasets version -p dist -m "Updated via GitHub Actions: ${{ steps.get_commit_message.outputs.message }}"
         working-directory: brain
