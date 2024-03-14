@@ -83,6 +83,8 @@ NoodleBrainActivityClassification/
 └── training.ipynb
 ```
 
+Below is a small explanation for the usage of the most important files:
+
 - **brain_solver/brain_model.py**: Model definition for the trained EfficientNet, including training functions and other model-specific operations.
 - **brain_solver/trainer.py**: Trainer class that encapsulates the training logic, used to manage the training process of models.
 - **brain_solver/eeg_dataset.py**: DataLoader compatibility layer, providing a dataset class that enables efficient data handling and preprocessing for PyTorch models.
@@ -90,13 +92,22 @@ NoodleBrainActivityClassification/
 - **brain_solver/filter.py**: Implementation of preprocessing filters (low-pass, high-pass, band-pass, and band-stop) used for data preprocessing before feeding it into the model.
 - **brain_solver/wav2vec2.py**: Class designed for data preprocessing, leveraging the Wav2Vec 2.0 model to process and transform data before model training or inference.
 - **setup.py**: Standard setup script to manage project dependencies and environment setup.
-
-### Notebooks:
-
 - **inference.ipynb**: Notebook for conducting inference using our trained EfficientNet model, part of the ensemble approach in the competition.
 - **training.ipynb**: Notebook dedicated to the training process of our EfficientNet model, which is later utilized within the ensemble for the competition.
 
+TODO:
+
+
+
 explaining the files ...........................
+
+FIX FIGURES
+
+
+
+
+
+
 
 ### Installation
 
@@ -110,29 +121,14 @@ pip install -r requirements.txt
 
 ## Commit and PR Rules
 
+We tried to stick to these rules during our project:
+
 1. **"Protected" master branch**: Direct commits to the master branch are not recommended. The branch is not locked, but do not do it.
-2. **Branching**: Always create a new branch for your changes. Name your branch based on the feature or fix you're working on, preferably linking to an issue number. E.g., `feature-12-add-new-filter` or `fix-15-resolve-this-really-stupid-bug`.
+2. **Branching**: Always create a new branch for your changes. Name your branch based on the feature or fix you're working on, preferably linking to an issue number. E.g., `feature-12-add-new-filter` or `fix-15-resolve-this-really-annoying-bug`.
 3. **Commit Messages**:
    - Commits should be categorized using prefixes like `feat:`, `fix:`, `chore:`, `docs:`, `style:`, `refactor:`, `perf:`, and `test:`.
    - Use meaningful commit messages that clearly describe the change.
-   - Incorporate the GitHub issue number at the beginning, e.g., `feat(#12): Added new functionality`. (optional)
 4. **Pull Requests (PRs)**:
-   - Each PR must be associated with a GitHub issue.
    - PRs should have descriptive titles and should explain the purpose and content of the changes.
    - Each PR must have at least one review before merging.
    - After reviews and any necessary adjustments, the PR can be merged into the master branch.
-
-## Template for Commit Messages
-
-```
-[prefix(#GitHub Issue Number)]: Short description of the change
-[prefix]: Short description of the change
-
-For example:
-feat(#12): Add new filter functionality
-feat: Add new filter functionality
-
-(Optional) A more detailed description can follow if required. It should provide context for the change, detail on the solution, or any other pertinent information.
-```
-
-This README should give a clear overview of the project and lay down some basic rules for collaboration.
