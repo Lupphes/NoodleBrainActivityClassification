@@ -1,4 +1,4 @@
-# Noodle Nappers -- MLiP Project
+# Harmful Brain Activity Classification – MLiP Project – by Noodle Nappers
 
 Welcome to the Noodle Nappers project repository, dedicated to the Machine Learning in Practice (MLiP) course. This repository focuses solely on the [Kaggle competition](https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification) aimed at detecting and classifying seizures and other types of harmful brain activity using electroencephalography (EEG) signals. Our work here aims to contribute to the advancement of neurocritical care, epilepsy treatment, and drug development through improved EEG pattern classification accuracy.
 
