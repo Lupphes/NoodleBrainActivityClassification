@@ -28,7 +28,6 @@ jobs:
 
       - name: Build Python Package
         run: |
-          cd brain
           python setup.py sdist bdist_wheel
           cp dataset-metadata.json dist/
 
