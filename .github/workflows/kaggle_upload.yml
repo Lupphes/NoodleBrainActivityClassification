@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r brain/requirements.txt
+          pip install -r requirements.txt
           pip install kaggle
           pip install wheel
 
