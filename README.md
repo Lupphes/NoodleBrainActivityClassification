@@ -49,7 +49,7 @@ To be able to store augmented data, packages, and models, we created several dat
 - [D2L Package](https://www.kaggle.com/datasets/tygofrancissen/d2l-package): This data set contains the necessary files to properly import the d2l package, as it is not available in Kaggle using offline mode.
 - [Trained Model EfficientNet](https://www.kaggle.com/datasets/tygofrancissen/trained-model-effnet-mlip9): This data set contains all versions of trained models for our modified EfficientNet notebook.
 - [Wav2vec/Filter EEGs and Spectograms](https://www.kaggle.com/datasets/dickblankvoort/w2v-specs): This data set contains the raw EEG data and spectograms after being processed with wav2vec, filters, or a combination.
-- [Models Wav2Vec/Filter Training](https://www.kaggle.com/datasets/dickblankvoort/models-first-wav2vec-training): This data set contains a wide range of models that were stored after being trained with the `Wav2vec EEGs and Spectograms` data set mentioned above.
+- [Models Wav2Vec/Filter Training](https://www.kaggle.com/datasets/dickblankvoort/models-first-wav2vec-training): This data set contains a wide range of models that were stored after being trained with the `Wav2vec/Filter EEGs and Spectograms` data set mentioned above.
 - [Catboost Model](https://www.kaggle.com/datasets/luepoe/catboost-model): This data set stores the trained models for CatBoost.
 - [Dilated WaveNet](https://www.kaggle.com/datasets/luepoe/dilated-wavenet): This data set stores the trained models for WaveNet.
 
@@ -57,8 +57,8 @@ To be able to store augmented data, packages, and models, we created several dat
 
 This is the core structure of our Github repository:
 
-``` txt
-NoodleNappers/
+```txt
+NoodleBrainActivityClassification/
 ├── brain_solver/
 │   ├── brain_model.py
 │   ├── config.py
@@ -81,9 +81,24 @@ NoodleNappers/
 └── training.ipynb
 ```
 
-### Version
+- **brain_solver/brain_model.py**: Model definition for the trained EfficientNet, including training functions and other model-specific operations.
+- **brain_solver/trainer.py**: Trainer class that encapsulates the training logic, used to manage the training process of models.
+- **brain_solver/eeg_dataset.py**: DataLoader compatibility layer, providing a dataset class that enables efficient data handling and preprocessing for PyTorch models.
+- **brain_solver/helpers.py**: A collection of miscellaneous functions that serve as a utility library for various tasks throughout the project.
+- **brain_solver/filter.py**: Implementation of preprocessing filters (low-pass, high-pass, band-pass, and band-stop) used for data preprocessing before feeding it into the model.
+- **brain_solver/wav2vec2.py**: Class designed for data preprocessing, leveraging the Wav2Vec 2.0 model to process and transform data before model training or inference.
+- **setup.py**: Standard setup script to manage project dependencies and environment setup.
 
-We are using _Python 3.10_ and the requirement installed as specified always with `pip`:
+### Notebooks:
+
+- **inference.ipynb**: Notebook for conducting inference using our trained EfficientNet model, part of the ensemble approach in the competition.
+- **training.ipynb**: Notebook dedicated to the training process of our EfficientNet model, which is later utilized within the ensemble for the competition.
+
+explaining the files ...........................
+
+### Installation
+
+In order to reproduce our results and run our code, you should use _Python 3.10_ and install the requirements as specified with `pip`:
 
 ```bash
 python3.10 -m venv venv
@@ -119,18 +134,3 @@ feat: Add new filter functionality
 ```
 
 This README should give a clear overview of the project and lay down some basic rules for collaboration.
-
-## HMS Competition Structure
-
-- **brain_solver/brain_model.py**: Model definition for the trained EfficientNet, including training functions and other model-specific operations.
-- **brain_solver/trainer.py**: Trainer class that encapsulates the training logic, used to manage the training process of models.
-- **brain_solver/eeg_dataset.py**: DataLoader compatibility layer, providing a dataset class that enables efficient data handling and preprocessing for PyTorch models.
-- **brain_solver/helpers.py**: A collection of miscellaneous functions that serve as a utility library for various tasks throughout the project.
-- **brain_solver/filter.py**: Implementation of preprocessing filters (low-pass, high-pass, band-pass, and band-stop) used for data preprocessing before feeding it into the model.
-- **brain_solver/wav2vec2.py**: Class designed for data preprocessing, leveraging the Wav2Vec 2.0 model to process and transform data before model training or inference.
-- **setup.py**: Standard setup script to manage project dependencies and environment setup.
-
-### Notebooks:
-
-- **inference.ipynb**: Notebook for conducting inference using our trained EfficientNet model, part of the ensemble approach in the competition.
-- **training.ipynb**: Notebook dedicated to the training process of our EfficientNet model, which is later utilized within the ensemble for the competition.
