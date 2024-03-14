@@ -16,10 +16,14 @@ from .trainer import Trainer
 
 
 class BrainModel:
+    # Static variable to keep track of the number of processed layers
     processed_layers = 0
 
     @staticmethod
     def set_trainable_layers(model):
+        """
+        Sets the first 20 non-batchNormalization layers of a model to be trainable.
+        """
         for module in reversed(list(model.children())):
             if len(list(module.children())) > 0:  # If the module has children
                 BrainModel.set_trainable_layers(module)
@@ -60,8 +64,17 @@ class BrainModel:
         - n_splits: Number of splits for cross-validation.
         - batch_size_train: Batch size for training dataloader.
         - batch_size_valid: Batch size for validation dataloader.
-        - max_epochs: Maximum number of epochs for training.
+        - max_epochs_first_stage: Maximum number of epochs in the first stage of training.
+        - max_epochs_second_stage: Maximum number of epochs in the second stage of training.
         - num_workers: Number of workers for DataLoader.
+        - w2v_enabled: Whether to use wav2vec embeddings.
+        - model_eegs: Whether to use EEG data.
+        - raw_eegs: Whether to use raw EEG data.
+
+        Returns:
+        - all_oof: Numpy array of concatenated out-of-fold predictions.
+        - all_true: Numpy array of concatenated true labels.
+        - valid_loaders: List of DataLoader objects for validation, one for each fold.
         """
         all_oof = []
         all_true = []
@@ -78,6 +91,7 @@ class BrainModel:
             print("#" * 25)
             print(f"### Fold {i+1}")
 
+            # Create train and validation datasets and dataloaders
             train_ds = EEGDataset(
                 train_data_preprocessed.iloc[train_index],
                 spectrograms,
@@ -128,12 +142,14 @@ class BrainModel:
             print(f"### Train size: {len(train_index)}, Valid size: {len(valid_index)}")
             print("#" * 25)
 
+            # Create model
             model = Network(
                 config.trained_weight_file,
                 config.USE_KAGGLE_SPECTROGRAMS,
                 config.USE_EEG_SPECTROGRAMS,
             ).to(device)
 
+            # Train model if no trained model is provided or if fine-tuning is enabled
             if config.trained_model_path is None or config.FINE_TUNE:
                 if config.FINE_TUNE:
                     for param in model.base_model.parameters():
@@ -227,11 +243,15 @@ class BrainModel:
         Parameters:
         - config: Configuration object with attributes like VER (version), trained_model_path, and trained_weight_file.
         - device: The device (CPU or GPU) to run the validation on.
+        - all_oof: A list to store out-of-fold predictions.
+        - all_true: A list to store true labels.
         - valid_loaders: A list of DataLoader objects for validation, one for each fold.
 
         Returns:
         - all_oof: Numpy array of concatenated out-of-fold predictions.
+        - all_true: Numpy array of concatenated true labels.
         """
+        # Validate model across different folds
         for i in range(5):
             print("#" * 25)
             print(f"### Validating Fold {i+1}")
@@ -271,6 +291,20 @@ class BrainModel:
 
     @staticmethod
     def training_step(model, batch, criterion, device):
+        """
+        Trains a model for one epoch.
+
+        Parameters:
+        - model: The model to train.
+        - batch: The batch of training data.
+        - criterion: The loss function to use.
+        - device: The device (CPU or GPU) to run the training on.
+
+        Returns:
+        - loss: The loss value.
+        - acc: The accuracy value.
+        - len(y): The length of the target labels.
+        """
         x, y = batch
         x = x.to(device)
         y = y.to(device)
@@ -282,6 +316,17 @@ class BrainModel:
 
     @staticmethod
     def custom_accuracy(predicted_probs, true_probs):
+        """
+        Calculates the custom accuracy for a batch of predictions by comparing
+        predicted and true probabilities and taking the mean of the overlap.
+
+        Parameters:
+        - predicted_probs: The predicted probabilities.
+        - true_probs: The true probabilities.
+
+        Returns:
+        - The custom accuracy value.
+        """
         # Convert predicted probabilities and true probabilities to numpy arrays
         predicted_probs = torch.softmax(predicted_probs, dim=-1).detach().cpu().numpy()
         true_probs = true_probs.detach().cpu().numpy()
@@ -297,6 +342,19 @@ class BrainModel:
 
     @staticmethod
     def validation_step(model, batch, criterion, device):
+        """
+        Validates a model for one epoch.
+
+        Parameters:
+        - model: The model to validate.
+        - batch: The batch of validation data.
+        - criterion: The loss function to use.
+        - device: The device (CPU or GPU) to run the validation on.
+
+        Returns:
+        - val_loss: The validation loss value.
+        - val_acc: The validation accuracy value.
+        """
         # Prepare batch data
         x, y = batch
         x = x.to(device)
@@ -312,6 +370,19 @@ class BrainModel:
 
     @staticmethod
     def validate(model, val_loader, criterion, device):
+        """
+        Validates the model.
+
+        Parameters:
+        - model: The model to validate.
+        - val_loader: The validation DataLoader.
+        - criterion: The loss function to use.
+        - device: The device (CPU or GPU) to run the validation on.
+
+        Returns:
+        - val_loss: The validation loss value.
+        - val_acc: The validation accuracy value.
+        """
         with torch.no_grad():
             model.eval()
             outputs = [
@@ -324,12 +395,18 @@ class BrainModel:
             epoch_acc = torch.stack(batch_accs).mean()
             return {"val_loss": epoch_loss.item(), "val_acc": epoch_acc.item()}
 
-    @staticmethod  # First train stage lr schedule
+    @staticmethod
     def lrfn(epoch):
+        """
+        Learning rate schedule for the first training stage.
+        """
         return [1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4, 1e-5, 1e-5][epoch - 1]
 
-    @staticmethod  # Second train stage lr schedule
+    @staticmethod
     def lrfn2(epoch):
+        """
+        Learning rate schedule for the second training stage.
+        """
         return [1e-4, 1e-5, 1e-5, 1e-5, 1e-6][epoch - 1]
 
     @staticmethod
@@ -343,6 +420,20 @@ class BrainModel:
         device,
         lr_scheduler,
     ):
+        """
+        Trains a model for a specified number of epochs. Afterwards, it validates
+        the model and plots the training and validation loss and accuracy.
+
+        Parameters:
+        - model: The model to train.
+        - num_epochs: The number of epochs to train for.
+        - criterion: The loss function to use.
+        - optimizer: The optimizer to use.
+        - train_loader: The training DataLoader.
+        - val_loader: The validation DataLoader.
+        - device: The device (CPU or GPU) to run the training on.
+        - lr_scheduler: The learning rate scheduler.
+        """
         animator = d2l.Animator(
             xlabel="epoch",
             xlim=[1, num_epochs],
@@ -372,7 +463,7 @@ class BrainModel:
                 )
                 # Compute Gradients
                 loss.backward()
-                # Clip gradients to prevent explosion
+                # Clip gradients to prevent exploding gradients
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 # Update weights
                 optimizer.step()
