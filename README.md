@@ -1,38 +1,63 @@
 # Harmful Brain Activity Classification – MLiP Project – by Noodle Nappers
 
-Welcome to the Noodle Nappers project repository, dedicated to the Machine Learning in Practice (MLiP) course. This repository focuses solely on the [Kaggle competition](https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification) aimed at detecting and classifying seizures and other types of harmful brain activity using electroencephalography (EEG) signals. Our work here aims to contribute to the advancement of neurocritical care, epilepsy treatment, and drug development through improved EEG pattern classification accuracy.
+Welcome to the Noodle Nappers project repository, dedicated to the 2024 Machine Learning in Practice (MLiP) course at Radboud University. This repository focuses solely on the [Kaggle competition](https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification) aimed at detecting and classifying seizures and other types of harmful brain activity using electroencephalography (EEG) signals. Our work here aims to contribute to the advancement of neurocritical care, epilepsy treatment, and drug development through improved EEG pattern classification accuracy.
+
+**Authors: Luppo Sloup, Dick Blankvoort, Tygo Francissen (MLiP Group 9)**
 
 ## Overview
 
 The goal of this competition is to develop a model trained on EEG signals recorded from critically ill hospital patients. By accurately detecting and classifying seizures and other harmful brain activity, this project can aid doctors and brain researchers in providing faster and more accurate treatments, potentially unlocking transformative benefits for neurocritical care, epilepsy management, and drug development.
 
-### Our Notebooks:
+## Our Work
 
-1. [IIACT Ensamble 7 Models](https://www.kaggle.com/code/luepoe/iiact-ensamble-7-models)
-2. [HMS Multiple Model Ensemble Original](https://www.kaggle.com/code/luepoe/hms-multiple-model-ensemble-4-notebooks-19b844) _(Updated link)_
-3. [IIACT Ensamble Features Head Starter](https://www.kaggle.com/code/luepoe/iiact-ensamble-features-head-starter)
-4. [Wavenet Starter LB 0.66](https://www.kaggle.com/code/luepoe/wavenet-starter-lb-0-66)
-5. [Train Notebook by TygoFrancissen](https://www.kaggle.com/code/tygofrancissen/train-notebook)
-6. [Master Training HMS Workflow](https://www.kaggle.com/code/luepoe/master-training-hms-workflow)
-7. [IIACT Training HMS Workflow](https://www.kaggle.com/code/luepoe/iiact-training-hms-workflow)
-8. [Inference Notebook by TygoFrancissen](https://www.kaggle.com/code/tygofrancissen/inference-notebook)
-9. [LB 0.46 DilatedInception WaveNet Inference](https://www.kaggle.com/code/luepoe/lb-0-46-dilatedinception-wavenet-inference)
-10. [LB 0.46 DilatedInception WaveNet Training](https://www.kaggle.com/code/luepoe/lb-0-46-dilatedinception-wavenet-training)
-11. [Catboost Starter LB 0.67](https://www.kaggle.com/code/luepoe/catboost-starter-lb-0-67)
+Our work includes multiple notebooks, files, and data sets, which are explained in more detail below. This also includes an explanation of this Github repository's structure.
 
-### Our Datasets:
+### Notebooks
 
-1. [W2V Specs](https://www.kaggle.com/datasets/dickblankvoort/w2v-specs)
-2. [Models First Wav2Vec Training](https://www.kaggle.com/datasets/dickblankvoort/models-first-wav2vec-training)
-3. [Trained Model Effnet MLiP9](https://www.kaggle.com/datasets/tygofrancissen/trained-model-effnet-mlip9)
-4. [Catboost Model](https://www.kaggle.com/datasets/luepoe/catboost-model)
-5. [Brain Solver](https://www.kaggle.com/datasets/luepoe/brain-solver)
-6. [D2L Package](https://www.kaggle.com/datasets/tygofrancissen/d2l-package)
-7. [Dilated WaveNet](https://www.kaggle.com/datasets/luepoe/dilated-wavenet)
+In this Github repository, four notebooks are present that were the main notebooks in this project. They are self-explanatory and will be shortly mentioned in the project structure section below.
 
-## Project Structure
+However, in our project, many more notebooks were created. We list the most important ones from our accounts on Kaggle below.
 
-```
+We utilized these notebooks to modify the EfficientNet B0 starter for training and inference:
+
+- [Train Notebook](https://www.kaggle.com/code/tygofrancissen/train-notebook)
+- [Inference Notebook](https://www.kaggle.com/code/tygofrancissen/inference-notebook)
+
+Furthermore, we modified the HMS ensemble of EfficientNet and ResNet to fit our ensemble model with these notebooks:
+
+- [HMS Multiple Model Ensemble Original](https://www.kaggle.com/code/luepoe/hms-multiple-model-ensemble-4-notebooks-19b844)
+- [IIACT Training HMS Workflow](https://www.kaggle.com/code/luepoe/iiact-training-hms-workflow)
+- [Master Training HMS Workflow](https://www.kaggle.com/code/luepoe/master-training-hms-workflow)
+
+As we added more models to the ensemble, we needed to modify and search through more notebooks:
+
+- [IIACT Ensamble Features Head Starter](https://www.kaggle.com/code/luepoe/iiact-ensamble-features-head-starter)
+- [Wavenet Starter](https://www.kaggle.com/code/luepoe/wavenet-starter-lb-0-66)
+- [WaveNet Training](https://www.kaggle.com/code/luepoe/lb-0-46-dilatedinception-wavenet-training)
+- [WaveNet Inference](https://www.kaggle.com/code/luepoe/lb-0-46-dilatedinception-wavenet-inference)
+- [Catboost Starter](https://www.kaggle.com/code/luepoe/catboost-starter-lb-0-67)
+
+Finally, this notebook we created combines all models to create an ensemble and the submission:
+
+- [IIACT Ensemble 7 Models](https://www.kaggle.com/code/luepoe/iiact-ensamble-7-models)
+
+### Datasets
+
+To be able to store augmented data, packages, and models, we created several data sets on Kaggle:
+
+- [Brain Solver](https://www.kaggle.com/datasets/luepoe/brain-solver): This data set contains the whole Python package with all the code being pushed into this using GitHub workflows. There are almost 125 versions available of this package.
+- [D2L Package](https://www.kaggle.com/datasets/tygofrancissen/d2l-package): This data set contains the necessary files to properly import the d2l package, as it is not available in Kaggle using offline mode.
+- [Trained Model EfficientNet](https://www.kaggle.com/datasets/tygofrancissen/trained-model-effnet-mlip9): This data set contains all versions of trained models for our modified EfficientNet notebook.
+- [Wav2vec/Filter EEGs and Spectograms](https://www.kaggle.com/datasets/dickblankvoort/w2v-specs): This data set contains the raw EEG data and spectograms after being processed with wav2vec, filters, or a combination.
+- [Models Wav2Vec/Filter Training](https://www.kaggle.com/datasets/dickblankvoort/models-first-wav2vec-training): This data set contains a wide range of models that were stored after being trained with the `Wav2vec EEGs and Spectograms` data set mentioned above.
+- [Catboost Model](https://www.kaggle.com/datasets/luepoe/catboost-model): This data set stores the trained models for CatBoost.
+- [Dilated WaveNet](https://www.kaggle.com/datasets/luepoe/dilated-wavenet): This data set stores the trained models for WaveNet.
+
+### Project Structure
+
+This is the core structure of our Github repository:
+
+``` txt
 NoodleNappers/
 ├── brain_solver/
 │   ├── brain_model.py
@@ -40,12 +65,14 @@ NoodleNappers/
 │   ├── eeg_dataset.py
 │   ├── filter.py
 │   ├── helpers.py
+│   ├── network.py
 │   ├── trainer.py
 │   └── wav2vec2.py
 ├── data/
+├── images/
 ├── dataset-metadata.json
+├── ensemble-7-models.ipynb
 ├── inference.ipynb
-├── notebooks/
 ├── preprocessing.ipynb
 ├── pyproject.toml
 ├── README.md
@@ -54,7 +81,7 @@ NoodleNappers/
 └── training.ipynb
 ```
 
-## Version
+### Version
 
 We are using _Python 3.10_ and the requirement installed as specified always with `pip`:
 
