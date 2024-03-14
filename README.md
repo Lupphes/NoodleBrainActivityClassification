@@ -93,19 +93,17 @@ feat: Add new filter functionality
 
 This README should give a clear overview of the project and lay down some basic rules for collaboration.
 
-## Structure of HMS competition
+## HMS Competition Structure
 
-- training.ipynb is the notebook for the training workflow.
-- luppo_inter.ipynb is the notebook for the inference workflow.
-- brain_model.py provides the validation functions for the training notebook. It's only used by the training notebook.
-- config.py stores any model variables and makes sure the data paths are set up properly. It's used by the training and testing notebooks as well as by brain_model.py.
-- trainer.py provides the framework for the actual training process. It is used by the training workbook to perform training and by the inference notebook to load the trained model.
-- eeg_dataset.py provides a class framework for storing the data set in, so that it can be interpreted by torch's data loader. It's used by both notebooks.
-- helpers.py provides a variety of helper functions (e.g. loading csv files and reading/plotting spectrograms). It is used heavily used by both notebooks.
-- filter.py gives filtering functions for pre-processing (e.g. high pass + low pass), however as far as I can tell it is not yet used.
-- wav2vec2.py performs the wav2vec preprocessing. It is also not yet integrated anywhere.
-- setup.py makes sure all necessary packages are installed
+- **brain_solver/brain_model.py**: Model definition for the trained EfficientNet, including training functions and other model-specific operations.
+- **brain_solver/trainer.py**: Trainer class that encapsulates the training logic, used to manage the training process of models.
+- **brain_solver/eeg_dataset.py**: DataLoader compatibility layer, providing a dataset class that enables efficient data handling and preprocessing for PyTorch models.
+- **brain_solver/helpers.py**: A collection of miscellaneous functions that serve as a utility library for various tasks throughout the project.
+- **brain_solver/filter.py**: Implementation of preprocessing filters (low-pass, high-pass, band-pass, and band-stop) used for data preprocessing before feeding it into the model.
+- **brain_solver/wav2vec2.py**: Class designed for data preprocessing, leveraging the Wav2Vec 2.0 model to process and transform data before model training or inference.
+- **setup.py**: Standard setup script to manage project dependencies and environment setup.
 
-### Required input files for HMS competition
+### Notebooks:
 
-![alt text](image.png)
+- **inference.ipynb**: Notebook for conducting inference using our trained EfficientNet model, part of the ensemble approach in the competition.
+- **training.ipynb**: Notebook dedicated to the training process of our EfficientNet model, which is later utilized within the ensemble for the competition.
