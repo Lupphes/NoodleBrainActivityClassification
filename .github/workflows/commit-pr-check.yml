@@ -26,7 +26,5 @@ jobs:
         uses: gsactions/commit-message-checker@v2
         with:
           pattern: '^(feat|fix|chore|docs|style|refactor|perf|test):? .+|^build\(deps(-dev)?\): .+|^Merge branch.+$'
-          checkAllCommitMessages: "false"
           flags: "gm"
           error: 'Your first line has to follow the format: prefix(#GitHub Issue Number): description or the dependabot format like "build(deps): ...". For example: feat(#12): Add new filter functionality. The #GitHub Issue Number is optional.'
-          accessToken: ${{ secrets.GITHUB_TOKEN }}
