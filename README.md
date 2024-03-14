@@ -65,7 +65,7 @@ NoodleBrainActivityClassification/
 │   ├── brain_model.py
 │   ├── config.py
 │   ├── eeg_dataset.py
-│   ├── filter.py
+│   ├── filters.py
 │   ├── helpers.py
 │   ├── network.py
 │   ├── trainer.py
@@ -86,28 +86,19 @@ NoodleBrainActivityClassification/
 Below is a small explanation for the usage of the most important files:
 
 - **brain_solver/brain_model.py**: Model definition for the trained EfficientNet, including training functions and other model-specific operations.
-- **brain_solver/trainer.py**: Trainer class that encapsulates the training logic, used to manage the training process of models.
+- **brain_solver/config.py**: Configuration file to save variables and paths used throughout the project.
 - **brain_solver/eeg_dataset.py**: DataLoader compatibility layer, providing a dataset class that enables efficient data handling and preprocessing for PyTorch models.
+- **brain_solver/filters.py**: Implementation of preprocessing filters (low-pass, high-pass, band-pass, and band-stop) used for data preprocessing before feeding it into the model.
 - **brain_solver/helpers.py**: A collection of miscellaneous functions that serve as a utility library for various tasks throughout the project.
-- **brain_solver/filter.py**: Implementation of preprocessing filters (low-pass, high-pass, band-pass, and band-stop) used for data preprocessing before feeding it into the model.
+- **brain_solver/network.py**: Network class that stores the structure of the model.
+- **brain_solver/trainer.py**: Trainer class that encapsulates the training logic, used to manage the training process of models.
 - **brain_solver/wav2vec2.py**: Class designed for data preprocessing, leveraging the Wav2Vec 2.0 model to process and transform data before model training or inference.
+- **data/**: Input data files for the project.
+- **ensemble-7-models.ipynb**: Notebook for ensembling 7 modes into one final submission.
+- **inference.ipynb**: Notebook for conducting inference using our trained EfficientNet model, part of our ensemble approach in the competition.
+- **preprocessing.ipynb**: Notebook that can be run locally to preprocess and store raw EEG data and spectograms.
 - **setup.py**: Standard setup script to manage project dependencies and environment setup.
-- **inference.ipynb**: Notebook for conducting inference using our trained EfficientNet model, part of the ensemble approach in the competition.
-- **training.ipynb**: Notebook dedicated to the training process of our EfficientNet model, which is later utilized within the ensemble for the competition.
-
-TODO:
-
-
-
-explaining the files ...........................
-
-FIX FIGURES
-
-
-
-
-
-
+- **training.ipynb**: Notebook dedicated to the training process of our EfficientNet model, which is later utilized within our ensemble for the competition.
 
 ### Installation
 
