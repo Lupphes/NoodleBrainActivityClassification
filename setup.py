@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 
+# Build settings
 setup(
     name="brain_solver",
     version="1.0.0",
