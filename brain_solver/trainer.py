@@ -4,6 +4,8 @@ import pytorch_lightning as pl
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
 
+# This class is a simple wrapper around the EfficientNet B0 model but compared to Network,
+# this one is a PyTorch Lightning Module so can be trained using PyTorch Lightning
 class Trainer(pl.LightningModule):
 
     def __init__(
@@ -42,6 +44,7 @@ class Trainer(pl.LightningModule):
         out = self.base_model(x)
         return out
 
+    # One training step
     def training_step(self, batch, batch_idx):
         x, y = batch
         out = self.forward(x)
@@ -50,9 +53,11 @@ class Trainer(pl.LightningModule):
         loss = kl_loss(out, y)
         return loss
 
+    # One validation step
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         return torch.softmax(self.forward(batch), dim=1)
 
+    # Configure the optimizer
     def configure_optimizers(self, lr=1e-3):
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
         return optimizer

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision.models import efficientnet_b0
 
-
+# This class is a simple wrapper around the EfficientNet B0 model
 class Network(nn.Module):
     def __init__(
         self,

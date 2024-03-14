@@ -10,6 +10,7 @@ class FilterType(Enum):
     BANDSTOP = auto()
 
 
+# Filters class, can be used to apply filters to the data
 class Filters:
     def __init__(self, order=5):
         self.order = order
