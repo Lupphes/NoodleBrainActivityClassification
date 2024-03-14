@@ -1,6 +1,4 @@
-from numpy import full
-
-
+# Configuration file for the project
 class Config:
     def __init__(
         self,
@@ -22,6 +20,7 @@ class Config:
         USE_PRETRAINED_MODEL=True,
         FINE_TUNE=True,
     ):
+        # Parameters
         self.VER = VER
         self.num_classes = num_classes
         self.batch_size = batch_size
@@ -37,7 +36,7 @@ class Config:
         self.should_read_eeg_spectrogram_files = should_read_eeg_spectrogram_files
         self.FINE_TUNE = FINE_TUNE
 
-        # Paths setup with default parameters
+        # Paths to data sources and models
         self.full_path = full_path
         self.output_path = output_path
         self.competition_data_path = (
