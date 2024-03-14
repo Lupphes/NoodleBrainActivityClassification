@@ -41,6 +41,8 @@ Finally, this notebook we created combines all models to create an ensemble and 
 
 - [IIACT Ensemble 7 Models](https://www.kaggle.com/code/luepoe/iiact-ensamble-7-models)
 
+Note that this notebook has not been made public in order to keep our best-working code private, but it is available in this repository as `ensemble-7-models.ipynb`.
+
 ### Datasets
 
 To be able to store augmented data, packages, and models, we created several data sets on Kaggle:
