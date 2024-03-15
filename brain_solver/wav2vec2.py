@@ -36,7 +36,15 @@ class Wav2Vec2:
         data, model_path="facebook/wav2vec2-base-960h", min_length=16000
     ):
         """
-        Pre-processes the data for use by wav2vec2, ensuring data meets minimum length requirements.
+        Pre-processes the EEG data for use by wav2vec2.
+
+        Arguments:
+        - data (ndarray): raw EEG data.
+        - model_path (str): the path to the wav2vec2 model to use.
+        - min_length (int): the minimum length of the data.
+
+        Returns:
+        - list: the pre-processed data.
         """
         resampler = Resample(
             orig_freq=Wav2Vec2.SAMPLING_RATE,
@@ -52,21 +60,6 @@ class Wav2Vec2:
                 torch.tensor(data[i], dtype=torch.float32).unsqueeze(0)
             ).numpy()[0]
 
-            # # Ensure data meets minimum length
-            # if data_resampled.shape[1] < min_length:
-            #     # Calculate padding (total and for each side)
-            #     total_padding = min_length - data_resampled.shape[1]
-            #     padding_left = total_padding // 2
-            #     padding_right = total_padding - padding_left
-
-            #     # Pad data
-            #     data_resampled = np.pad(
-            #         data_resampled,
-            #         ((0, 0), (padding_left, padding_right)),
-            #         "constant",
-            #         constant_values=0,
-            #     )
-
             # Normalize data
             data_normalized = model(
                 data_resampled,
@@ -81,9 +74,15 @@ class Wav2Vec2:
     @staticmethod
     def preprocess_spec_data(data, model_path="facebook/wav2vec2-base-960h"):
         """
-        Pre-processes the data for use by wav2vec2.
-        """
+        Pre-processes the spectograms for use by wav2vec2.
 
+        Arguments:
+        - data: spectograms.
+        - model_path: the path to the wav2vec2 model to use.
+
+        Returns:
+        - list: the pre-processed data.
+        """
         model = Wav2Vec2Processor.from_pretrained(model_path, local_files_only=True)
         data_normalized = model(
             data,
@@ -98,8 +97,14 @@ class Wav2Vec2:
     def process_with_wav2vec2(data, model_path="facebook/wav2vec2-base-960h"):
         """
         Applies wav2vec2 to the given data and returns the values in the last hidden layer.
-        """
 
+        Arguments:
+        - data: the pre-processed data.
+        - model_path: the path to the wav2vec2 model to use.
+
+        Returns:
+        - list: the output from the last hidden layer.
+        """
         model = Wav2Vec2ForCTC.from_pretrained(model_path)
 
         w2v_output = []
@@ -115,15 +120,16 @@ class Wav2Vec2:
         parquet_file, proc_eegs=False, model_path="facebook/wav2vec2-base-960h"
     ):
         """
-        Applies the Wav2Vec2 algorithm to the raw EEG data given as argument
-        and writes the result to a folder data/w2v_eegs
+        Preprocesses the data and applies the Wav2Vec2 algorithm to the raw EEG data or spectograms.
 
         Arguments:
-        - data (ndarray): raw EEG data from a parquet file.
-        - data_path: the path leading to the data folder.
-        - out_filename: the desired name of the output file (preferrably the parquet filename without .parquet).
-        """
+        - parquet_file: the parquet file containing the data.
+        - proc_eegs: whether to process EEG data or spectograms.
+        - model_path: the path to the wav2vec2 model to use.
 
+        Returns:
+        - list: the output from the last hidden layer.
+        """
         if proc_eegs:
             data_preprocessed = Wav2Vec2.preprocess_eeg_data(parquet_file, model_path)
         else:

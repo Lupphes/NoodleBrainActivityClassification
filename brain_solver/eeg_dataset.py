@@ -3,6 +3,10 @@ from torch.utils.data import Dataset
 import albumentations as albu
 
 
+# Dataset class for EEG data, what it does:
+# 1. Loads the data from the dataframe
+# 2. Augments the data if needed
+# 3. Returns the data in the format that the model can use
 class EEGDataset(Dataset):
     def __init__(
         self,

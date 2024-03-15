@@ -124,7 +124,17 @@ class Helpers:
 
     @staticmethod
     def eeg_from_parquet(parquet_path, FEATS, display=False):
+        """
+        Reads EEG data from a parquet file and returns a numpy array of the data.
 
+        Parameters:
+        - parquet_path: str, path to the parquet file containing EEG data.
+        - FEATS: list of strings, names of the EEG features to extract.
+        - display: bool, if True displays the EEG data.
+
+        Returns:
+        - A numpy array of the EEG data.
+        """
         # EXTRACT MIDDLE 50 SECONDS
         eeg = pd.read_parquet(parquet_path, columns=FEATS)
         rows = len(eeg)
@@ -234,11 +244,12 @@ class Helpers:
         return all_eegs
 
     @staticmethod
-    # DENOISE FUNCTION
+    # Function to calculate the mean absolute deviation
     def maddest(d, axis=None):
         return np.mean(np.absolute(d - np.mean(d, axis)), axis)
 
     @staticmethod
+    # Denoise function
     def denoise(x, wavelet="haar", level=1):
         coeff = pywt.wavedec(x, wavelet, mode="per")
         sigma = (1 / 0.6745) * Helpers.maddest(coeff[-level])
@@ -252,7 +263,17 @@ class Helpers:
 
     @staticmethod
     def spectrogram_from_eeg(parquet_path, display=False, USE_WAVELET=None):
+        """
+        Reads EEG data from a parquet file and returns a spectrogram of the data.
 
+        Parameters:
+        - parquet_path: str, path to the parquet file containing EEG data.
+        - display: bool, if True displays the EEG data.
+        - USE_WAVELET: str, wavelet to use for denoising.
+
+        Returns:
+        - A numpy array of the spectrogram.
+        """
         # LOAD MIDDLE 50 SECONDS OF EEG SERIES
         eeg = pd.read_parquet(parquet_path)
         middle = (len(eeg) - 10_000) // 2
