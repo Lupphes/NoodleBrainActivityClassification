@@ -262,7 +262,7 @@ class BrainModel:
                 else f"{config.trained_model_path}EffNet_v{config.VER}_f{i}.ckpt"
             )
             if config.trained_model_path is None or config.FINE_TUNE:
-                model = torch.load(ckpt_file)
+                model = torch.load(ckpt_file, weights_only=False)
             else:
                 model = Trainer.load_from_checkpoint(
                     ckpt_file,
