@@ -102,10 +102,10 @@ Below is a small explanation for the usage of the most important files:
 
 ### Installation
 
-In order to reproduce our results and run our code, you should use _Python 3.10_ and install the requirements as specified with `pip`:
+In order to reproduce our results and run our code, you should use _Python 3.11_ and install the requirements as specified with `pip`:
 
 ```bash
-python3.10 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
